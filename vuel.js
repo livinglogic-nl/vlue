@@ -2,80 +2,82 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const chokidar = require('chokidar');
+const debounce = require('debounce');
 
-// One-liner for current directory, ignores .dotfiles
-chokidar.watch('./src', {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
-    console.log(event, path);
-    if(event === 'change') {
-        rebuild();
-    }
+const chrome = require('./chrome');
 
-});
+const rebuildVendor = require('./rebuild-vendor');
 
 const get = (file) => fs.readFileSync(file).toString();
 const set = (file,cnt) => fs.writeFileSync(file, cnt);
+const localGet = (file) => get(file); //.replace(/const /g, 'var ');
 
-const vendorMap = {
-    vue: 'dist/vue.common.dev.js',
-    vuex: 'dist/vuex.common.js',
+
+const sourceExtensions = {
 };
+const toImports = require('./to-imports');
 
-const toImports = (name, str) => {
-    str = str.replace('export default', 'module.exports = ');
-    return `vuelImports['${name}'] = (function() {
-        var module = {};
-        ${str}
-        return module.exports;
-        })();
-        `;
-};
+fs.copyFile('src/index.html', 'dist/index.html', e => {});
 
-const rebuildVendor = () => {
-    const replaceEnvs = (str) => {
-        return str.replace(/process\.env\.[A-z]+/g, (all, key) => process.env[key]);
-    }
 
-    let vendor = `
-var vuelImports = {};
-var vuelImport = (name) => {
-    return vuelImports[name];
-}
-`;
-    [
-        'vue',
-        'vuex',
-    ].forEach(mod => {
-        let str = get('node_modules/'+mod+'/'+vendorMap[mod]);
-        str = toImports(mod,str);
-        str = replaceEnvs(str);
-        vendor += str;
-    });
-    set('dist/vendor.js', vendor);
-}
+const rebuild = async() => {
+    const vendors = new Set();
+    const locals = new Set();
 
-const rebuild = () => {
-    console.time('rebuild');
-    fs.copyFile(
-        'src/index.html',
-        'dist/index.html',
-        e => {
+    const root = 'src/index.js';
+    const todo = [ root ];
+
+    let index = '';
+    let init;
+    while(todo.length) {
+        let path = todo.shift();
+        let str = localGet(path);
+        str = str.replace(/import (.*?) from '(.+?)';/g, (all, as, from) => {
+            if(from.indexOf('.') !== 0) {
+                vendors.add(from);
+            } else {
+                //resolve
+                from = from.replace('.', 'src');
+                if(!from.includes('.')) {
+                    console.log(from);
+                    from = sourceExtensions[from];
+                    console.log(from);
+                }
+                if(!locals.has(from)) {
+                    locals.add(from);
+                    todo.push(from);
+                }
+            }
+            return `const ${as} = vuelImport('${from}');`;
+        });
+
+        if(path !== root) {
+            index += toImports(path, str);
+        } else {
+            // init = str;
+            index += toImports(path, str);
         }
-    );
+    }
+    index += `
+    vuelImport('src/index.js');
+    `;
 
-    let index = get('src/index.js');
-    //replace node_modules with vuelImports
-    index = index.replace(/import ([A-z]+?) from '(.+)';/g, (all, as, from) => {
-        return `var ${as} = vuelImport('${from}');`;
-    });
 
-    index = toImports('./App.js', get('src/App.js')) + index;
+    // index += init;
     set('dist/index.js', index);
-    // rebuildVendor();
-    console.timeEnd('rebuild');
+    rebuildVendor(vendors);
 
-    // child_process.execSync('osascript ~/apples/fast.scpt');
-    child_process.execSync('osascript ~/apples/chrome.reload.scpt');
+    await chrome.rescript();
 }
 
-rebuildVendor();
-rebuild();
+const lazyRebuild = debounce(rebuild,40);
+chokidar.watch('./src', {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
+    if(event === 'change') {
+        console.log(event, path);
+        rebuild();
+    } else if(event === 'add') {
+        sourceExtensions[ path.substr(0, path.lastIndexOf('.')) ] = path;
+        lazyRebuild();
+    }
+});
+
