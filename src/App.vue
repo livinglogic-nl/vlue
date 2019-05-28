@@ -1,12 +1,14 @@
+<template>
+    <div id="app">
+        {{ message }} {{count}}
+        <button @click="inc">increment</button>
+        <button @click="dec">decrement</button>
+    </div>
+</template>
+<script>
+
 import { mapGetters } from 'vuex';
 export default {
-    template: `
-        <div id="app">
-            {{ message }} {{count}}
-            <button @click="inc">increment</button>
-            <button @click="dec">decrement</button>
-        </div>
-    `,
     data() { return {
         message: 'Hello Vue'
     }},
@@ -26,6 +28,15 @@ export default {
     },
 
     created() {
-        // this.message = this.$store.state.count;
     },
 }
+
+</script>
+<style>
+
+body {
+    background: gray;
+    background: white;
+}
+
+</style>

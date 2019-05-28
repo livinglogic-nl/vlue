@@ -55,4 +55,20 @@ module.exports = {
 
         });
     },
+
+    async restyle() {
+        await startup;
+        await page.evaluate(() => {
+            try {
+                var a = document.querySelector('link[data-name=vuel]');
+                document.head.removeChild(a);
+            } catch(e) {
+            }
+            var b = document.createElement('link');
+            b.rel = 'stylesheet';
+            b.href = 'style.css';
+            b.dataset.name = 'vuel';
+            document.head.appendChild(b);
+        });
+    },
 };
