@@ -3,11 +3,10 @@ const fs = require('fs');
 const child_process = require('child_process');
 const chokidar = require('chokidar');
 const debounce = require('debounce');
-const vlq = require('vlq');
 
 const chrome = require('./chrome');
-
 const rebuildVendor = require('./rebuild-vendor');
+const generateSourcemap = require('./generate-sourcemap');
 
 const get = (file) => fs.readFileSync(file).toString();
 const set = (file,cnt) => fs.writeFileSync(file, cnt);
@@ -72,6 +71,7 @@ const rebuild = async() => {
             path,
             str: get(path),
         };
+        entry.source = entry.str;
         if(path.includes('.vue')) {
             handleVue(entry, styles);
         }
@@ -83,24 +83,10 @@ const rebuild = async() => {
     entries.forEach(entry => {
         index += entry.str;
     });
+    console.log(index.split('\n').map((s,i) => i + ' '+s).join('\n'));
 
     index += `vuelImport('src/index.js');`;
-
-    // const sourceMap = {
-    //     version: 3,
-    //     names: [],
-    //     file: 'index.js',
-    //     sources: [ 'src/index.js' ],
-    //     sourcesContent: [ get(root) ],
-    //     mappings: [ '', '',
-    //         vlq.encode([0,0,0,0]),
-    //         vlq.encode([0,0,1,0]),
-    //         vlq.encode([0,0,1,0]),
-    //     ].join(';'),
-    // };
-    // const url = 'data:application/json;base64,'
-    //     +Buffer.from(JSON.stringify(sourceMap)).toString('base64');
-    // index += '//# sourceMappingURL='+url;
+    index += generateSourcemap(entries);
 
     if(index !== prevIndex) {
         set('dist/index.js', index);
