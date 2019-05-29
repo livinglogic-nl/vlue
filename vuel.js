@@ -3,6 +3,7 @@ const fs = require('fs');
 const child_process = require('child_process');
 const chokidar = require('chokidar');
 const debounce = require('debounce');
+const vlq = require('vlq');
 
 const chrome = require('./chrome');
 
@@ -12,12 +13,13 @@ const get = (file) => fs.readFileSync(file).toString();
 const set = (file,cnt) => fs.writeFileSync(file, cnt);
 
 const sourceExtensions = {};
-const toImports = require('./to-imports');
+const convertExports = require('./convert-exports');
 
 const prepareIndex = require('./prepare-index');
 prepareIndex();
 
-const handleVue = (str, styles) => {
+const handleVue = (entry, styles) => {
+    let { str } = entry;
     let template = str.match(/<template>([\s\S]+)<\/template>/)[1];
     let script = str.match(/<script>([\s\S]+)<\/script>/)[1];
     let style = str.match(/<style>([\s\S]+)<\/style>/)[1];
@@ -28,11 +30,11 @@ const handleVue = (str, styles) => {
     str = script;
 
     styles.push(style);
-    return str;
+    entry.str = str;
 }
 
-const handleImports = (str, vendors, locals, todo) => {
-    return str.replace(/import (.*?) from '(.+?)';/g, (all, as, from) => {
+const convertImports = (entry, vendors, locals, todo) => {
+    entry.str = entry.str.replace(/import (.*?) from '(.+?)';/g, (all, as, from) => {
         if(from.indexOf('.') !== 0) {
             vendors.add(from);
         } else {
@@ -58,27 +60,47 @@ const rebuild = async() => {
 
     const root = 'src/index.js';
     const todo = [ root ];
+    const entries = [];
 
     const styles = [];
     let index = '';
     let init;
     while(todo.length) {
         let path = todo.shift();
-        let str = get(path);
+        const entry = {
+            name: path,
+            path,
+            str: get(path),
+        };
         if(path.includes('.vue')) {
-            str = handleVue(str, styles);
+            handleVue(entry, styles);
         }
-
-        str = handleImports(str, vendors, locals, todo);
-        if(path !== root) {
-            index += toImports(path, str);
-        } else {
-            index += toImports(path, str);
-        }
+        convertImports(entry, vendors, locals, todo);
+        convertExports(entry);
+        entries.push(entry);
     }
-    index += `
-    vuelImport('src/index.js');
-    `;
+
+    entries.forEach(entry => {
+        index += entry.str;
+    });
+
+    index += `vuelImport('src/index.js');`;
+
+    // const sourceMap = {
+    //     version: 3,
+    //     names: [],
+    //     file: 'index.js',
+    //     sources: [ 'src/index.js' ],
+    //     sourcesContent: [ get(root) ],
+    //     mappings: [ '', '',
+    //         vlq.encode([0,0,0,0]),
+    //         vlq.encode([0,0,1,0]),
+    //         vlq.encode([0,0,1,0]),
+    //     ].join(';'),
+    // };
+    // const url = 'data:application/json;base64,'
+    //     +Buffer.from(JSON.stringify(sourceMap)).toString('base64');
+    // index += '//# sourceMappingURL='+url;
 
     if(index !== prevIndex) {
         set('dist/index.js', index);
@@ -86,6 +108,8 @@ const rebuild = async() => {
         chrome.rescript();
         prevIndex = index;
     }
+
+
 
     const style = styles.join('\n');
     if(style != prevStyle) {

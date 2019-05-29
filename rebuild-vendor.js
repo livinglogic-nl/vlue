@@ -2,7 +2,7 @@ const fs = require('fs');
 const get = (file) => fs.readFileSync(file).toString();
 const set = (file,cnt) => fs.writeFileSync(file, cnt);
 
-const toImports = require('./to-imports');
+const convertExports = require('./convert-exports');
 
 const replaceEnvs = (str) => {
     return str.replace(/process\.env\.[A-z]+/g, (all, key) => process.env[key]);
@@ -25,11 +25,16 @@ var vuelImport = (name) => {
     return vuelInstanced[name];
 }
 `;
-    vendors.forEach(mod => {
-        let str = get('node_modules/'+mod+'/'+vendorMap[mod]);
-        str = toImports(mod,str);
-        str = replaceEnvs(str);
-        vendor += str;
+    vendors.forEach(name => {
+        const path = 'node_modules/'+name+'/'+vendorMap[name];
+        const entry = {
+            name,
+            path,
+            str: get(path),
+        };
+        entry.str = replaceEnvs(entry.str);
+        convertExports(entry);
+        vendor += entry.str;
     });
     set('dist/vendor.js', vendor);
 }

@@ -41,7 +41,6 @@ module.exports = {
             const reload = (name) => {
                 try {
                     var a = document.querySelector('script[src*='+name+']');
-                    console.log(a);
                     document.body.removeChild(a);
                 } catch(e) {
                 }
@@ -53,7 +52,6 @@ module.exports = {
 
             // reload('vendor');
             reload('index');
-
         });
     },
 

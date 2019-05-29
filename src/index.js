@@ -12,4 +12,4 @@ const app = new Vue({
     store,
 }).$mount('#app')
 
-
+console.log(1);
