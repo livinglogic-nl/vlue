@@ -14,8 +14,8 @@ const set = (file,cnt) => fs.writeFileSync(file, cnt);
 const sourceExtensions = {};
 const toImports = require('./to-imports');
 
-fs.copyFile('src/index.html', 'dist/index.html', e => {});
-
+const prepareIndex = require('./prepare-index');
+prepareIndex();
 
 const handleVue = (str, styles) => {
     let template = str.match(/<template>([\s\S]+)<\/template>/)[1];
@@ -50,6 +50,7 @@ const handleImports = (str, vendors, locals, todo) => {
 }
 
 let prevIndex = null;
+let prevStyle = null;
 
 const rebuild = async() => {
     const vendors = new Set();
@@ -86,9 +87,12 @@ const rebuild = async() => {
         prevIndex = index;
     }
 
-    var style = styles.join('\n');
-    set('dist/style.css', style);
-    chrome.restyle();
+    const style = styles.join('\n');
+    if(style != prevStyle) {
+        set('dist/style.css', style);
+        prevStyle = style;
+        chrome.restyle();
+    }
 }
 
 const lazyRebuild = debounce(rebuild,40);

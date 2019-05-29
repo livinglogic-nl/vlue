@@ -41,7 +41,8 @@ module.exports = {
             const reload = (name) => {
                 try {
                     var a = document.querySelector('script[src*='+name+']');
-                    document.body.removeChild(b);
+                    console.log(a);
+                    document.body.removeChild(a);
                 } catch(e) {
                 }
 

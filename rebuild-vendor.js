@@ -26,7 +26,6 @@ var vuelImport = (name) => {
 }
 `;
     vendors.forEach(mod => {
-        console.log('adding',mod);
         let str = get('node_modules/'+mod+'/'+vendorMap[mod]);
         str = toImports(mod,str);
         str = replaceEnvs(str);

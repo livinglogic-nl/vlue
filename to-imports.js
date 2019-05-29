@@ -1,5 +1,5 @@
 module.exports = (name, str) => {
-    str = str.replace('export default', 'module.exports = ');
+    str = str.replace('export default', 'module.exports =');
     return `vuelImports['${name}'] = (function() {
         var module = {};
         ${str}

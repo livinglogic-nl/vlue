@@ -35,8 +35,9 @@ export default {
 <style>
 
 body {
-    background: gray;
     background: white;
+
+    margin: 0;
 }
 
 </style>
