@@ -15,7 +15,7 @@ module.exports = (entries) => {
             let sourceOffset = (i === 0 ? (ei === 0 ? 0 : 1) : 0);
             let offset = (i === 0) ? 0 : 1;
             if(ei > 0 && i === 0) {
-                offset = -2;
+                offset = -1;
             }
             sections.push( vlq.encode([0,sourceOffset,offset,0]) );
         }

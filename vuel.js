@@ -8,7 +8,7 @@ const chrome = require('./chrome');
 const rebuildVendor = require('./rebuild-vendor');
 const generateSourcemap = require('./generate-sourcemap');
 
-const get = (file) => fs.readFileSync(file).toString();
+const get = (file) => fs.readFileSync(file).toString().trim();
 const set = (file,cnt) => fs.writeFileSync(file, cnt);
 
 const sourceExtensions = {};
