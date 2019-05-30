@@ -13,42 +13,11 @@ const set = (file,cnt) => fs.writeFileSync(file, cnt);
 
 const sourceExtensions = {};
 const convertExports = require('./convert-exports');
+const convertImports = require('./convert-imports');
+const splitVue = require('./split-vue');
 
 const prepareIndex = require('./prepare-index');
 prepareIndex();
-
-const handleVue = (entry, styles) => {
-    let { str } = entry;
-    let template = str.match(/<template>([\s\S]+)<\/template>/)[1];
-    let script = str.match(/<script>([\s\S]+)<\/script>/)[1];
-    let style = str.match(/<style>([\s\S]+)<\/style>/)[1];
-    script = script.replace(
-        'export default {', 
-        `export default {
-    template: \`${template}\`,`);
-    str = script;
-
-    styles.push(style);
-    entry.str = str;
-}
-
-const convertImports = (entry, vendors, locals, todo) => {
-    entry.str = entry.str.replace(/import (.*?) from '(.+?)';/g, (all, as, from) => {
-        if(from.indexOf('.') !== 0) {
-            vendors.add(from);
-        } else {
-            from = from.replace('.', 'src');
-            if(!from.includes('.')) {
-                from = sourceExtensions[from];
-            }
-            if(!locals.has(from)) {
-                locals.add(from);
-                todo.push(from);
-            }
-        }
-        return `const ${as} = vuelImport('${from}');`;
-    });
-}
 
 let prevIndex = null;
 let prevStyle = null;
@@ -73,9 +42,9 @@ const rebuild = async() => {
         };
         entry.source = entry.str;
         if(path.includes('.vue')) {
-            handleVue(entry, styles);
+            splitVue(entry, styles);
         }
-        convertImports(entry, vendors, locals, todo);
+        convertImports(sourceExtensions, entry, vendors, locals, todo);
         convertExports(entry);
         entries.push(entry);
     }
@@ -83,7 +52,7 @@ const rebuild = async() => {
     entries.forEach(entry => {
         index += entry.str;
     });
-    console.log(index.split('\n').map((s,i) => i + ' '+s).join('\n'));
+    // console.log(index.split('\n').map((s,i) => i + ' '+s).join('\n'));
 
     index += `vuelImport('src/index.js');`;
     index += generateSourcemap(entries);
@@ -94,8 +63,6 @@ const rebuild = async() => {
         chrome.rescript();
         prevIndex = index;
     }
-
-
 
     const style = styles.join('\n');
     if(style != prevStyle) {

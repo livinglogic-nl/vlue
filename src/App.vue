@@ -9,10 +9,6 @@
 
 import { mapGetters } from 'vuex';
 export default {
-    data() { return {
-        message: 'Hello Vue'
-    }},
-
     methods: {
         inc() {
             this.$store.commit('increment');
@@ -21,13 +17,13 @@ export default {
             this.$store.commit('decrement');
         },
     },
+    data() { return {
+        message: 'Hello Vue'
+    }},
     computed: {
         ...mapGetters([
             'count',
         ]),
-    },
-
-    created() {
     },
 }
 
