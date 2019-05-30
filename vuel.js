@@ -52,7 +52,6 @@ const rebuild = async() => {
     entries.forEach(entry => {
         index += entry.str;
     });
-    // console.log(index.split('\n').map((s,i) => i + ' '+s).join('\n'));
 
     index += `vuelImport('src/index.js');`;
     index += generateSourcemap(entries);
