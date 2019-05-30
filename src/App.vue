@@ -31,9 +31,8 @@ export default {
 <style>
 
 body {
+    background: red;
     background: white;
-
-    margin: 0;
 }
 
 </style>
