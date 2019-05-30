@@ -1,14 +1,13 @@
 module.exports = (entry, styles) => {
-    let { str } = entry;
-    let template = str.match(/<template>([\s\S]+)<\/template>/)[1];
-    let script = str.match(/<script>([\s\S]+)<\/script>/)[1];
-    let style = str.match(/<style>([\s\S]+)<\/style>/)[1];
-    script = script.replace(
-        'export default {', 
-        `export default {
-    template: \`${template}\`,`);
-    str = script;
+    let [ script, rest ] = entry.str.split('</script>');
+    script = script.replace('<template>', 'const template = `');
+    script = script.replace('</template>', '`');
+    script = script.replace('<script>', '');
+    script = script.replace('export default {', 'export default { template,');
 
-    styles.push(style);
-    entry.str = str;
+    let style = rest.match(/<style>\n([\s\S]+)<\/style>/);
+    if(style) {
+        styles.push(style[0]);
+    }
+    entry.str = script;
 }

@@ -7,30 +7,37 @@ const puppeteer = require('puppeteer-core');
 let browser; 
 let page;
 const startup = (async() => {
-    browser = await puppeteer.connect({
-        browserURL: 'http://localhost:9222',
-        defaultViewport: null,
-    });
-    let pages = await browser.pages();
-    for await(let p of pages) {
-        let url = p.url();
-        if(url.includes('chrome-devtools://')) { continue; }
-        if(url.includes('http://localhost:8080')) {
-            page = p;
-            break;
-        }
+    try {
+        browser = await puppeteer.connect({
+            browserURL: 'http://localhost:9222',
+            defaultViewport: null,
+        });
+        let pages = await browser.pages();
+        for await(let p of pages) {
+            let url = p.url();
+            if(url.includes('chrome-devtools://')) { continue; }
+            if(url.includes('http://localhost:8080')) {
+                page = p;
+                break;
+            }
 
+        }
+        await page.setCacheEnabled(false);
+    } catch(e) {
+        console.log(e);
+        console.log('error connecting to chrome, please use remote-debugging-port 9222');
     }
-    await page.setCacheEnabled(false);
 })();
 
 module.exports = {
     async reload() {
         await startup;
+        if(!page) { return; }
         await page.reload();
     },
 
     async rescript() {
+        if(!page) { return; }
         await startup;
         await page.evaluate(() => {
             Object.keys(vuelInstanced).forEach(key => {
@@ -57,6 +64,7 @@ module.exports = {
 
     async restyle() {
         await startup;
+        if(!page) { return; }
         await page.evaluate(() => {
             try {
                 var a = document.querySelector('link[data-name=vuel]');

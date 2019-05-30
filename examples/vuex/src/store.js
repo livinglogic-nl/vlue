@@ -1,4 +1,3 @@
-
 import Vuex from 'vuex';
 
 const store = new Vuex.Store({
@@ -7,16 +6,15 @@ const store = new Vuex.Store({
     },
     mutations: {
         increment (state) {
-            state.count++
+            state.count++;
         },
         decrement (state) {
             state.count--;
         }
     },
-
     getters: {
         count: s => s.count,
     },
-})
+});
 
 export default store;

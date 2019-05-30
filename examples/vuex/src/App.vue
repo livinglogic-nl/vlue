@@ -8,6 +8,7 @@
 <script>
 
 import { mapGetters } from 'vuex';
+
 export default {
     methods: {
         inc() {
@@ -18,7 +19,7 @@ export default {
         },
     },
     data() { return {
-        message: 'Hello Vue'
+        message: 'Hello Vue!'
     }},
     computed: {
         ...mapGetters([
@@ -29,9 +30,5 @@ export default {
 
 </script>
 <style>
-
-body {
-    background: white;
-}
-
 </style>
+
