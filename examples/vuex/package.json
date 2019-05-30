@@ -1,5 +1,5 @@
 {
-  "name": "vuel",
+  "name": "vuel-example-vuex",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,11 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chokidar": "^3.0.0",
-    "debounce": "^1.2.0",
-    "micro": "^9.3.4",
-    "puppeteer-core": "^1.17.0",
-    "vlq": "^1.0.0",
     "vue": "^2.6.10",
     "vuex": "^3.1.1"
   }

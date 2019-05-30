@@ -31,7 +31,6 @@ export default {
 <style>
 
 body {
-    background: red;
     background: white;
 }
 

@@ -36,5 +36,6 @@ var vuelImport = (name) => {
         convertExports(entry);
         vendor += entry.str;
     });
-    set('dist/vendor.js', vendor);
+    return vendor;
+    // set('dist/vendor.js', vendor);
 }

@@ -4,18 +4,14 @@ const child_process = require('child_process');
 const chokidar = require('chokidar');
 const debounce = require('debounce');
 
+const server = require('./server');
+const prepareIndex = require('./prepare-index');
+const rebuildVendor = require('./rebuild-vendor');
+const rebuildSource = require('./rebuild-source');
+const generateSourcemap = require('./generate-sourcemap');
 const chrome = require('./chrome');
 
-const set = (file,cnt) => fs.writeFileSync(file, cnt);
-
-const rebuildSource = require('./rebuild-source');
-const rebuildVendor = require('./rebuild-vendor');
-const generateSourcemap = require('./generate-sourcemap');
-
 const sourceExtensions = {};
-
-const prepareIndex = require('./prepare-index');
-prepareIndex();
 
 let prevSource = null;
 let prevVendors = new Set;
@@ -41,10 +37,11 @@ const rebuild = async() => {
         source += `vuelImport('src/index.js');`;
         source += generateSourcemap(entries);
 
-        set('dist/index.js', source);
+        server.add('/index.js', source);
         if(!eqSet(vendors, prevVendors)) {
             console.log('vendors change');
-            rebuildVendor(vendors);
+            const vendor = rebuildVendor(vendors);
+            server.add('/vendor.js', vendor);
             prevVendors = vendors;
         }
         chrome.rescript();
@@ -53,12 +50,15 @@ const rebuild = async() => {
     const style = styles.join('\n');
     if(style != prevStyle) {
         console.log('style change');
-        set('dist/style.css', style);
+        server.add('/style.css', style);
         prevStyle = style;
         chrome.restyle();
     }
 
 }
+
+const index = prepareIndex();
+server.add('/', index);
 
 const lazyRebuild = debounce(rebuild,40);
 chokidar.watch('./src', {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
@@ -70,4 +70,4 @@ chokidar.watch('./src', {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
         lazyRebuild();
     }
 });
-
+server.start();
