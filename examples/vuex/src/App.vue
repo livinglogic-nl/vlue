@@ -30,5 +30,10 @@ export default {
 
 </script>
 <style>
+
+body {
+background: #eee;
+}
+
 </style>
 

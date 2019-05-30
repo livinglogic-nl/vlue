@@ -7,7 +7,7 @@ module.exports = (entry, styles) => {
 
     let style = rest.match(/<style>\n([\s\S]+)<\/style>/);
     if(style) {
-        styles.push(style[0]);
+        styles.push(style[1]);
     }
     entry.str = script;
 }
