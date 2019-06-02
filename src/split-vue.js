@@ -5,7 +5,7 @@ module.exports = (entry, styles) => {
     script = script.replace('<script>', '');
     script = script.replace('export default {', 'export default { template,');
 
-    let style = rest.match(/<style>\n([\s\S]+)<\/style>/);
+    let style = rest.match(/<style[^>]*>\n([\s\S]+)<\/style>/);
     if(style) {
         styles.push(style[1]);
     }

@@ -1,5 +1,6 @@
 
 const micro = require('micro')
+const fs = require('fs');
 
 let server;
 let map = {
@@ -12,6 +13,11 @@ const start = () => {
                 res.setHeader('Content-Type', 'text/css');
             }
             return map[url];
+        }
+        try {
+            const cnt = fs.readFileSync('static/'+url);
+            return cnt;
+        } catch(e) {
         }
         console.log(url, 'not found');
         return '404'

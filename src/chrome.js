@@ -3,48 +3,65 @@ const child_process = require('child_process');
 
 const puppeteer = require('puppeteer-core');
 
-
+const devurl = 'http://localhost:8080';
 let browser; 
-let page;
+let pagePromise = null;
 const startup = (async() => {
     try {
         browser = await puppeteer.connect({
             browserURL: 'http://localhost:9222',
             defaultViewport: null,
         });
-        let pages = await browser.pages();
-        for await(let p of pages) {
-            let url = p.url();
-            if(url.includes('chrome-devtools://')) { continue; }
-            if(url.includes('http://localhost:8080')) {
-                page = p;
-                break;
-            }
-
-        }
-        await page.setCacheEnabled(false);
     } catch(e) {
         console.log(e);
         console.log('error connecting to chrome, please use remote-debugging-port 9222');
     }
 })();
 
+
+
+const getPage = async() => {
+    if(!pagePromise) {
+        pagePromise = new Promise(async(ok) => {
+            await startup;
+
+            let page;
+            let pages = await browser.pages();
+            for await(let p of pages) {
+                let url = p.url();
+                if(url.includes('chrome-devtools://')) { continue; }
+                if(url.includes(devurl)) {
+                    page = p;
+                    break;
+                }
+            }
+            if(!page) {
+                page = await browser.newPage();
+                await page.goto(url);
+            }
+            console.log('found');
+            await page.setCacheEnabled(false);
+            ok(page);
+        });
+    }
+    return pagePromise;
+}
+
 module.exports = {
     async reload() {
-        await startup;
-        if(!page) { return; }
-        await page.reload();
+        (await getPage()).reload();
     },
 
     async rescript() {
-        if(!page) { return; }
-        await startup;
-        await page.evaluate(() => {
-            Object.keys(vuelInstanced).forEach(key => {
-                if(key.indexOf('src') === 0) {
-                    delete vuelInstanced[key];
-                }
-            });
+        (await getPage()).evaluate(() => {
+            try {
+                Object.keys(vuelInstanced).forEach(key => {
+                    if(key.indexOf('src') === 0) {
+                        delete vuelInstanced[key];
+                    }
+                });
+            } catch(e) {
+            }
             const reload = (name) => {
                 try {
                     var a = document.querySelector('script[src*='+name+']');
@@ -63,9 +80,7 @@ module.exports = {
     },
 
     async restyle() {
-        await startup;
-        if(!page) { return; }
-        await page.evaluate(() => {
+        (await getPage()).evaluate(() => {
             try {
                 var a = document.querySelector('link[data-name=vuel]');
                 document.head.removeChild(a);

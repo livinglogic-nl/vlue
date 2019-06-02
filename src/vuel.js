@@ -11,6 +11,7 @@ const rebuildSource = require('./rebuild-source');
 const sourceMap = require('./source-map');
 const chrome = require('./chrome');
 
+const sass = require('node-sass');
 const sourceExtensions = {};
 const lines = require('./get-line-count');
 
@@ -32,7 +33,7 @@ const rebuild = async() => {
 
     let source = entries.map(e => e.str ).join('');
     if(source !== prevSource) {
-        // console.log('script change');
+        console.log('script change');
 
         prevSource = source;
         source += `vuelImport('src/index.js');`;
@@ -42,7 +43,7 @@ const rebuild = async() => {
 
         server.add('/index.js', source);
         if(!setsEqual(vendors, prevVendors)) {
-            // console.log('vendors change');
+            console.log('vendors change');
             const vendor = rebuildVendor(vendors);
             server.add('/vendor.js', vendor);
             prevVendors = vendors;
@@ -52,8 +53,12 @@ const rebuild = async() => {
 
     const style = styles.join('\n');
     if(style != prevStyle) {
-        // console.log('style change');
-        server.add('/style.css', style);
+        console.log('style change');
+        const result = sass.renderSync({
+            data: style,
+        });
+
+        server.add('/style.css', result.css);
         prevStyle = style;
         chrome.restyle();
     }
