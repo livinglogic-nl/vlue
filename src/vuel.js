@@ -66,7 +66,7 @@ const rebuild = async() => {
 }
 
 const index = prepareIndex();
-server.add('/', index);
+server.add('/index.html', index);
 
 const lazyRebuild = debounce(rebuild,40);
 chokidar.watch('./src', {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {

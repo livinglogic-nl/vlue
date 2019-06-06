@@ -25,7 +25,11 @@ module.exports = async(sourceExtensions) => {
         entry.source = entry.str;
         if(path.includes('.vue')) {
             splitVue(entry, styles);
+        } else if(path.includes('.svg')) {
+            const svg = entry.str;
+            entry.str = `module.exports = '${svg}';`;
         }
+
         convertImports(sourceExtensions, entry, vendors, locals, todo);
         convertExports(entry);
         entries.push(entry);

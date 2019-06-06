@@ -9,7 +9,8 @@ const replaceEnvs = (str) => {
 }
 
 const vendorMap = {
-    vue: 'dist/vue.common.dev.js',
+    // vue: 'dist/vue.common.dev.js',
+    vue: 'dist/vue.common.prod.js',
     vuex: 'dist/vuex.common.js',
     'vue-router': 'dist/vue-router.common.js',
 };

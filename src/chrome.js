@@ -37,9 +37,8 @@ const getPage = async() => {
             }
             if(!page) {
                 page = await browser.newPage();
-                await page.goto(url);
+                await page.goto(devurl);
             }
-            console.log('found');
             await page.setCacheEnabled(false);
             ok(page);
         });
@@ -52,30 +51,32 @@ module.exports = {
         (await getPage()).reload();
     },
 
-    async rescript() {
+    async rescript(file) {
         (await getPage()).evaluate(() => {
             try {
                 Object.keys(vuelInstanced).forEach(key => {
+                    if(key.includes('/store')) {
+                        return;
+                    } 
                     if(key.indexOf('src') === 0) {
                         delete vuelInstanced[key];
                     }
                 });
             } catch(e) {
             }
-            const reload = (name) => {
-                try {
-                    var a = document.querySelector('script[src*='+name+']');
-                    document.body.removeChild(a);
-                } catch(e) {
-                }
 
-                var b = document.createElement('script');
-                b.src = name + '.js';
-                document.body.appendChild(b);
+            console.log('rescripting');
+
+            let name = 'index';
+            try {
+                var a = document.querySelector('script[src*='+name+']');
+                document.body.removeChild(a);
+            } catch(e) {
             }
 
-            // reload('vendor');
-            reload('index');
+            var b = document.createElement('script');
+            b.src = name + '.js';
+            document.body.appendChild(b);
         });
     },
 

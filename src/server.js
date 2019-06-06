@@ -8,16 +8,26 @@ let map = {
 const start = () => {
     server = micro(async (req, res) => {
         let { url } = req;
+        if(url === '/') {
+            url = '/index.html';
+        }
+        if(url.includes('.html')) {
+            res.setHeader('Content-Type', 'text/html');
+        }
+        if(url.includes('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+        url = url.replace(/%20/g, ' ');
         if(url in map) {
-            if(url.includes('.css')) {
-                res.setHeader('Content-Type', 'text/css');
-            }
             return map[url];
         }
-        try {
-            const cnt = fs.readFileSync('static/'+url);
-            return cnt;
-        } catch(e) {
+
+        if(url.indexOf('/static') === 0) {
+            try {
+                const cnt = fs.readFileSync('static/'+url.substr(8));
+                return cnt;
+            } catch(e) {
+            }
         }
         console.log(url, 'not found');
         return '404'
@@ -27,6 +37,12 @@ const start = () => {
 
 const add = (path, content) => {
     map[path] = content;
+
+    try {
+        fs.writeFile('dist/'+path, content, ()=> {
+        });
+    } catch(e) {
+    }
 }
 module.exports = {
     start,
