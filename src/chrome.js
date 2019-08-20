@@ -79,28 +79,29 @@ module.exports = {
 
     async rescript(file) {
         (await getPage()).evaluate((file) => {
-            // if(vuelInstanced) {
-            //     Object.keys(vuelInstanced).forEach(key => {
-            //         if(key.includes('/store')) {
-            //             return;
-            //         } 
-            //         if(file && key !== file) {
-            //             return;
-            //         }
-            //         if(key.indexOf('src') === 0) {
-            //             delete vuelInstanced[key];
-            //         }
-            //     });
-            // }
+            if(file) {
+                // file could be specified, if so only replace that one
+                delete vuelInstanced[file];
+            } else {
+                Object.keys(vuelInstanced).forEach(key => {
+                    // TODO: always keep store alive?
+                    if(key.includes('/store')) return;
+                   
+                    // only remove non-vendor
+                    if(key.indexOf('src') === 0) {
+                        delete vuelInstanced[key];
+                    }
+                });
+            }
 
-            let name = 'index';
+            const name = 'index';
             try {
-                var a = document.querySelector('script[src*='+name+']');
+                const a = document.querySelector('script[src*='+name+']');
                 document.body.removeChild(a);
             } catch(e) {
             }
 
-            var b = document.createElement('script');
+            const b = document.createElement('script');
             b.src = name + '.js';
             document.body.appendChild(b);
         },file);

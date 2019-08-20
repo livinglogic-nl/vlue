@@ -32,5 +32,4 @@ module.exports = (vendors) => {
         vendor += entry.str;
     });
     return vendor;
-    // set('dist/vendor.js', vendor);
 }
