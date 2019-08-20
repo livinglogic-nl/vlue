@@ -1,6 +1,26 @@
 
 const fs = require('fs');
-const get = (file) => fs.readFileSync(file).toString().trim();
+
+const extensions = [ '', '.js', '.vue' ];
+const get = (file) => {
+    let cnt;
+    let resolved;
+    extensions.some(ext => {
+        try {
+            cnt = fs.readFileSync(file+ext).toString().trim();
+            resolved = file+ext;
+            return true;
+        } catch(e) {}
+        return false;
+    });
+    if(cnt) {
+        return {
+            cnt,
+            resolved,
+        };
+    }
+    throw Error(file + ' not found');
+}
 
 const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
@@ -17,13 +37,14 @@ module.exports = async(sourceExtensions) => {
     const todo = [ root ];
     while(todo.length) {
         let path = todo.shift();
+        let contents = get(path);
         const entry = {
-            name: path,
             path,
-            str: get(path),
+            name: contents.resolved,
+            str: contents.cnt,
         };
         entry.source = entry.str;
-        if(path.includes('.vue')) {
+        if(path.includes('.vue') || !path.includes('.')) {
             splitVue(entry, styles);
         } else if(path.includes('.svg')) {
             const svg = entry.str;

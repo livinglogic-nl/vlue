@@ -1,29 +1,55 @@
 
 const child_process = require('child_process');
-
 const puppeteer = require('puppeteer-core');
-
+const detect = require('detect-port');
 const devurl = 'http://localhost:8080';
 let browser; 
 let pagePromise = null;
-const startup = (async() => {
+
+const targetPort = 9222;
+const startup = async() => {
     try {
         browser = await puppeteer.connect({
-            browserURL: 'http://localhost:9222',
+            browserURL: 'http://localhost:'+targetPort,
             defaultViewport: null,
         });
     } catch(e) {
-        console.log(e);
-        console.log('error connecting to chrome, please use remote-debugging-port 9222');
-    }
-})();
+        console.log('Could not connect to chrome at', targetPort, 'trying to launch');
+        const loc = require('chrome-location');
+        child_process.spawn(loc, [
+            '--remote-debugging-port='+targetPort,
+        ], {
+            detached: true,
+        });
 
+        let running = await waitForPort();
+        if(running) {
+            await startup();
+        } else {
+            console.log('Could not connect to chrome at', targetPort, 'exiting...');
+            process.exit();
+        }
+    }
+}
+
+
+const waitForPort = async() => {
+    for(let i=0; i<100; i++) {
+        const port = await detect(targetPort);
+        process.stdout.write('.');
+        if(port !== targetPort) {
+            return true;
+        }
+        await new Promise(ok => setTimeout(ok,40));
+    }
+    return false;
+}
 
 
 const getPage = async() => {
     if(!pagePromise) {
         pagePromise = new Promise(async(ok) => {
-            await startup;
+            await startup();
 
             let page;
             let pages = await browser.pages();
@@ -52,20 +78,20 @@ module.exports = {
     },
 
     async rescript(file) {
-        (await getPage()).evaluate(() => {
-            try {
-                Object.keys(vuelInstanced).forEach(key => {
-                    if(key.includes('/store')) {
-                        return;
-                    } 
-                    if(key.indexOf('src') === 0) {
-                        delete vuelInstanced[key];
-                    }
-                });
-            } catch(e) {
-            }
-
-            console.log('rescripting');
+        (await getPage()).evaluate((file) => {
+            // if(vuelInstanced) {
+            //     Object.keys(vuelInstanced).forEach(key => {
+            //         if(key.includes('/store')) {
+            //             return;
+            //         } 
+            //         if(file && key !== file) {
+            //             return;
+            //         }
+            //         if(key.indexOf('src') === 0) {
+            //             delete vuelInstanced[key];
+            //         }
+            //     });
+            // }
 
             let name = 'index';
             try {
@@ -77,21 +103,22 @@ module.exports = {
             var b = document.createElement('script');
             b.src = name + '.js';
             document.body.appendChild(b);
-        });
+        },file);
     },
 
     async restyle() {
         (await getPage()).evaluate(() => {
-            try {
-                var a = document.querySelector('link[data-name=vuel]');
-                document.head.removeChild(a);
-            } catch(e) {
-            }
+            var a = document.querySelector('link[data-name=vuel]');
+
             var b = document.createElement('link');
             b.rel = 'stylesheet';
             b.href = 'style.css';
             b.dataset.name = 'vuel';
             document.head.appendChild(b);
+
+            if(a) {
+                document.head.removeChild(a);
+            }
         });
     },
 };

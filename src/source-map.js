@@ -1,11 +1,49 @@
+const fs = require('fs');
 const lines = require('./get-line-count');
+const vlq = require('vlq');
+
+const { SourceMapGenerator } = require('source-map');
+
+const { parse } = require('acorn');
+
+const getMappings = (e) => {
+    const mappings = [];
+
+    const lines = e.source.split('\n');
+
+    const start = lines.indexOf('<script>') + 1;
+    const end = (start>0) ? lines.indexOf('</script>') : lines.length;
+
+    if(start>0) {
+        mappings.push( ...Array(start).fill('') );
+    } else {
+        mappings.push('');
+    }
+
+    let lastLine = 1;
+    let lastCol = 0;
+    for(let i=start; i != end; i++) {
+        const match = lines[i].match(/\S/);
+        if(match) {
+            const line = i+1;
+            const column = match.index;
+            const obj = { line, column };
+            let offsetLine = line - lastLine; lastLine = line;
+            let offsetCol = column - lastCol; lastCol = column;
+            mappings.push(vlq.encode([column,0,offsetLine, offsetCol]));
+        } else {
+            mappings.push('');
+        }
+    }
+    return mappings.join(';');
+};
 
 const create = (entries) => {
     const sections = [];
 
     let offset = 0;
     entries.forEach(e => {
-        const len = lines(e.str);
+        let len = lines(e.str);
         sections.push({
             offset: { line:offset, column:0 },
             map: {
@@ -13,14 +51,8 @@ const create = (entries) => {
                 file:'index.js',
                 sources: [ e.path ],
                 sourcesContent: [ e.source ],
-                mappings: mappings = [
-                    '',
-                    '',
-                    'AAAA',
-                    ...Array(len).fill('AACA'),
-                ].join(';')
+                mappings: getMappings(e),
             }
-
         });
         offset += (len-1);
 

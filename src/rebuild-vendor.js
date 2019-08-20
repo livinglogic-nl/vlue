@@ -9,8 +9,8 @@ const replaceEnvs = (str) => {
 }
 
 const vendorMap = {
-    // vue: 'dist/vue.common.dev.js',
-    vue: 'dist/vue.common.prod.js',
+    vue: 'dist/vue.common.dev.js',
+    // vue: 'dist/vue.common.prod.js',
     vuex: 'dist/vuex.common.js',
     'vue-router': 'dist/vue-router.common.js',
 };
@@ -19,14 +19,6 @@ const vendorMap = {
 module.exports = (vendors) => {
 
     let vendor = `
-var vuelImports = {};
-var vuelInstanced = {};
-var vuelImport = (name) => {
-    if(!vuelInstanced[name]) {
-        vuelInstanced[name] = vuelImports[name]();
-    }
-    return vuelInstanced[name];
-}
 `;
     vendors.forEach(name => {
         const path = 'node_modules/'+name+'/'+vendorMap[name];
