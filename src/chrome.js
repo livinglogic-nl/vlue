@@ -73,6 +73,8 @@ const getPage = async() => {
 }
 
 module.exports = {
+    getPage,
+
     async reload() {
         (await getPage()).reload();
     },
@@ -89,10 +91,12 @@ module.exports = {
                    
                     // only remove non-vendor
                     if(key.indexOf('src') === 0) {
+                        console.log('refreshing', key);
                         delete vuelInstanced[key];
                     }
                 });
             }
+
 
             const name = 'index';
             try {

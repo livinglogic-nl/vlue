@@ -29,7 +29,6 @@ const start = () => {
             } catch(e) {
             }
         }
-        console.log(url, 'not found');
         return '404'
     })
     server.listen(8080);
@@ -37,12 +36,6 @@ const start = () => {
 
 const add = (path, content) => {
     map[path] = content;
-
-    try {
-        fs.writeFile('dist/'+path, content, ()=> {
-        });
-    } catch(e) {
-    }
 }
 module.exports = {
     start,
