@@ -22,13 +22,15 @@ module.exports = {
             }
             suite.handler();
 
+            console.log(chalk.bold(suite.name));
             for await(let it of its) {
-                console.log(chalk.blue(suite.name), chalk.white(it.name));
+                console.log(' >',it.name);
                 await it.handler({
                     t: assert,
                     page,
                 });
             }
+            console.log(chalk.green('passed'));
         }
     }
 }

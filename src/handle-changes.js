@@ -4,8 +4,8 @@ const path = require('path');
 const localSettings = require('./local-settings');
 const puppetTest = require('./puppet-test');
 
-module.exports = (changes) => {
-    const { reload } = localSettings;
+module.exports = (cwd, changes) => {
+    const { puppet } = localSettings;
 
     if(Object.keys(changes).length === 0) {
         chrome.rescript();
@@ -19,9 +19,11 @@ module.exports = (changes) => {
         }
     }
 
-    const puppetFile = path.join(process.cwd(), 'puppet', reload + '.js');
-    if(!fs.existsSync(puppetFile)) {
-        throw Error('Non existing reload mode or puppet script', reload);
+    if(puppet) {
+        const puppetFile = path.join(cwd, 'puppet', puppet + '.js');
+        if(!fs.existsSync(puppetFile)) {
+            throw Error('Puppet script does not exist', puppetFile);
+        }
+        puppetTest.runTests( [ puppetFile ] );
     }
-    puppetTest.runTests( [ puppetFile ] );
 }

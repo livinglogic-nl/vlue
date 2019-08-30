@@ -1,16 +1,16 @@
+const fs = require('fs');
 
 let config = {};
 module.exports = {
     update() {
-        try {
-            const full = require.resolve(process.cwd() + '/.vuel-local');
-            delete require.cache[full];
-            config = require(full);
-        } catch(e) {
-        }
+        const cnt = fs.readFileSync('.vuel-local.js');
+        config = eval(cnt);
     },
 
-    get reload() {
-        return config.reload || 'hot';
+    get puppet() {
+        return config.puppet;
+    },
+    get headless() {
+        return config.headless;
     },
 };

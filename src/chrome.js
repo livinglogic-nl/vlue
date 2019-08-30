@@ -1,3 +1,4 @@
+const localSettings = require('./local-settings');
 
 const child_process = require('child_process');
 const puppeteer = require('puppeteer-core');
@@ -8,6 +9,7 @@ let pagePromise = null;
 
 const targetPort = 9222;
 const startup = async() => {
+
     try {
         browser = await puppeteer.connect({
             browserURL: 'http://localhost:'+targetPort,
@@ -16,19 +18,15 @@ const startup = async() => {
     } catch(e) {
         console.log('Could not connect to chrome at', targetPort, 'trying to launch');
         const loc = require('chrome-location');
-        child_process.spawn(loc, [
-            '--remote-debugging-port='+targetPort,
-        ], {
-            detached: true,
-        });
+        browser = await puppeteer.launch({
+            executablePath: loc,
+            userDataDir: '/tmp/vuel-data-dir',
+            headless: false,
+            args: [
+                '-no-first-run',
+            ],
 
-        let running = await waitForPort();
-        if(running) {
-            await startup();
-        } else {
-            console.log('Could not connect to chrome at', targetPort, 'exiting...');
-            process.exit();
-        }
+        });
     }
 }
 

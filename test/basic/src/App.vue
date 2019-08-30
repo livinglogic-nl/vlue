@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        Hello puppet!
+        Hello Vuel!
     </div>
 </template>
 <script>

@@ -1,0 +1,33 @@
+
+hot-reload
+    changing component script reloads that component
+    changing css reloads css
+
+puppet
+    setting the puppet property in .vuel-local retests puppet script on changes
+
+flags
+    the --headless flag causes it to launch chrome in headless mode
+    the --home flag changes the base url (http://localhost:8080 default)
+    the --remote-port flag changes the port to connect to chrome (9222 default)
+    the --puppet flag allows to test one puppet script then exits
+    the --lint flag lints the project then exits
+
+vendors
+    uses correct script for vue
+    uses correct script for vuex
+    uses correct script for vue-router
+    uses correct script for axios
+    uses correct script for dayjs
+
+
+
+
+        
+
+
+
+
+    
+
+    
