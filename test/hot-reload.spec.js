@@ -1,52 +1,33 @@
-const child_process = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const test = require('blue-tape');
-const copyRecursive = require('./../src/copy-recursive');
+const { test, launchVuel } = require('../src/test-suite');
 
+test('changing component script reloads that component', async(t) => {
+    await launchVuel('basic', async(context) => {
+        const { page, chrome, project } = context;
 
-const prepareProject = (name) => {
+        const before = await page.evaluate(() => document.querySelector('#app').innerText);
+        t.equal(before, 'Hello Vuel!');
 
-    const sourceDir = path.join('test', name);
-    const targetDir = '/tmp/vuel-test';
-    // child_process.execSync('rm -rf '+targetDir);
-    if(!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir);
-        copyRecursive(sourceDir, targetDir);
-    }
+        await project.change('src/App.vue', (str) => str.replace(/Hello/g, 'You go'));
+        await chrome.waitForUpdate();
 
-    const cwd = targetDir;
-    if(!fs.existsSync(path.join(targetDir, 'node_modules'))) {
-        child_process.execFileSync('yarn', [ 'install' ], { cwd });
-        child_process.execFileSync('npm', [ 'link', 'vuel' ], { cwd, stdio:'inherit' });
-    }
-    return {
-        sourceDir,
-        targetDir,
-    };
-}
-
-const launchVuel = async(project) => {
-
-}
-
-test('changing component script reloads that component', async() => {
-    const project = await prepareProject('basic');
-    const context = await launchVuel(project);
-
-    const { page } = context;
-
-    const before = await page.evaluate(() => document.querySelector('#app').innerText);
-    console.log(before);
-
-    project.change('src/App.vue', (str) => str.replace('hello', 'bye'));
-    const after = await page.evaluate(() => document.querySelector('#app').innerText);
-
-    console.log(after);
+        const after = await page.evaluate(() => document.querySelector('#app').innerText);
+        t.equal(after, 'You go Vuel!');
+    });
 });
-test('changing css reloads css', async() => {
-    console.log(2);
+
+test('changing css reloads css', async(t) => {
+    await launchVuel('basic', async(context) => {
+        const { page, chrome, project } = context;
+
+        const before = await page.evaluate(() => getComputedStyle(document.body).display);
+        t.equal(before, 'block');
+
+        await project.change('src/App.vue', (str) => str.replace('display: block', 'display: flex'));
+        await chrome.waitForUpdate();
+
+        const after = await page.evaluate(() => getComputedStyle(document.body).display);
+        t.equal(after, 'flex');
+    });
 });
 
 

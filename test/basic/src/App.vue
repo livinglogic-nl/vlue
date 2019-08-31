@@ -17,6 +17,7 @@ body {
     -webkit-font-smoothing: antialiased;
     word-spacing: 0.05em;
     color: #4f5959;
+    display: block;
 }
 
 </style>

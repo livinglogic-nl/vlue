@@ -7,6 +7,8 @@ let map = {
 }
 const start = () => {
     server = micro(async (req, res) => {
+        res.setHeader('Connection', 'close');
+
         let { url } = req;
         if(url === '/') {
             url = '/index.html';
@@ -34,10 +36,15 @@ const start = () => {
     server.listen(8080);
 }
 
+const stop = () => {
+    server.close();
+}
+
 const add = (path, content) => {
     map[path] = content;
 }
 module.exports = {
     start,
+    stop,
     add,
 };

@@ -4,17 +4,20 @@ const child_process = require('child_process');
 const puppeteer = require('puppeteer-core');
 const detect = require('detect-port');
 const devurl = 'http://localhost:8080';
+
+
 let browser; 
 let pagePromise = null;
+let shouldClose;
 
 const targetPort = 9222;
 const startup = async() => {
-
     try {
         browser = await puppeteer.connect({
             browserURL: 'http://localhost:'+targetPort,
             defaultViewport: null,
         });
+        shouldClose = false;
     } catch(e) {
         console.log('Could not connect to chrome at', targetPort, 'trying to launch');
         const loc = require('chrome-location');
@@ -27,9 +30,9 @@ const startup = async() => {
             ],
 
         });
+        shouldClose = true;
     }
 }
-
 
 const waitForPort = async() => {
     for(let i=0; i<100; i++) {
@@ -70,15 +73,27 @@ const getPage = async() => {
     return pagePromise;
 }
 
+
+let waiting = [];
+
 module.exports = {
     getPage,
+
+    waitForUpdate() {
+        const p = new Promise(ok => {
+            waiting.push(() => {
+                setTimeout(ok, 40);
+            });
+        });
+        return p;
+    },
 
     async reload() {
         (await getPage()).reload();
     },
 
     async rescript(file) {
-        (await getPage()).evaluate((file) => {
+        await (await getPage()).evaluate((file) => {
             if(file) {
                 // file could be specified, if so only replace that one
                 delete vuelInstanced[file];
@@ -106,7 +121,12 @@ module.exports = {
             const b = document.createElement('script');
             b.src = name + '.js';
             document.body.appendChild(b);
-        },file);
+        },file).catch(e => {
+            console.log('session closed?');
+        });
+
+        waiting.forEach(func => func());
+        waiting = [];
     },
 
     async restyle() {
@@ -123,5 +143,18 @@ module.exports = {
                 document.head.removeChild(a);
             }
         });
+        waiting.forEach(func => func());
+        waiting = [];
+    },
+
+    async stop() {
+        if(shouldClose) {
+            await browser.close();
+        } else {
+            await browser.disconnect();
+        }
+        browser = null;
+        pagePromise = null;
+
     },
 };

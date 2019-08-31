@@ -4,7 +4,7 @@ const path = require('path');
 const localSettings = require('./local-settings');
 const puppetTest = require('./puppet-test');
 
-module.exports = (cwd, changes) => {
+module.exports = (changes) => {
     const { puppet } = localSettings;
 
     if(Object.keys(changes).length === 0) {
@@ -20,7 +20,7 @@ module.exports = (cwd, changes) => {
     }
 
     if(puppet) {
-        const puppetFile = path.join(cwd, 'puppet', puppet + '.js');
+        const puppetFile = path.join(process.cwd(), 'puppet', puppet + '.js');
         if(!fs.existsSync(puppetFile)) {
             throw Error('Puppet script does not exist', puppetFile);
         }
