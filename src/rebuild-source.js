@@ -1,5 +1,6 @@
-
+const NotFoundError = require('./not-found-error');
 const fs = require('fs');
+
 
 const extensions = [ '', '.js', '.vue' ];
 const get = (file) => {
@@ -13,13 +14,13 @@ const get = (file) => {
         } catch(e) {}
         return false;
     });
-    if(cnt) {
+    if(typeof(cnt) === 'string') {
         return {
             cnt,
             resolved,
         };
     }
-    throw Error(file + ' not found');
+    throw new NotFoundError(file);
 }
 
 const convertExports = require('./convert-exports');

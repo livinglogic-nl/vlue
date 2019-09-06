@@ -1,3 +1,4 @@
+const log = require('./log');
 const localSettings = require('./local-settings');
 
 const child_process = require('child_process');
@@ -19,7 +20,7 @@ const startup = async() => {
         });
         shouldClose = false;
     } catch(e) {
-        console.log('Could not connect to chrome at', targetPort, 'trying to launch');
+        log.info(`Could not connect to chrome at ${targetPort} trying to launch`);
         const loc = require('chrome-location');
         browser = await puppeteer.launch({
             executablePath: loc,
@@ -76,6 +77,12 @@ const getPage = async() => {
 
 let waiting = [];
 
+
+const handleWaiting = () => {
+    waiting.forEach(func => func());
+    waiting = [];
+}
+
 module.exports = {
     getPage,
 
@@ -90,6 +97,7 @@ module.exports = {
 
     async reload() {
         (await getPage()).reload();
+        handleWaiting();
     },
 
     async rescript(file) {
@@ -121,12 +129,8 @@ module.exports = {
             const b = document.createElement('script');
             b.src = name + '.js';
             document.body.appendChild(b);
-        },file).catch(e => {
-            console.log('session closed?');
-        });
-
-        waiting.forEach(func => func());
-        waiting = [];
+        },file);
+        handleWaiting();
     },
 
     async restyle() {
@@ -143,8 +147,7 @@ module.exports = {
                 document.head.removeChild(a);
             }
         });
-        waiting.forEach(func => func());
-        waiting = [];
+        handleWaiting();
     },
 
     async stop() {

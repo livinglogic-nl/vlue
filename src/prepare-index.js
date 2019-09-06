@@ -1,9 +1,13 @@
+const NotFoundError = require('./not-found-error');
 const fs = require('fs');
-const get = (file) => fs.readFileSync(file).toString();
-const set = (file,cnt) => fs.writeFileSync(file, cnt);
-
 module.exports = () => {
-    let html = get('src/index.html');
+    const file = 'src/index.html';
+    let html;
+    try {
+        html = fs.readFileSync(file).toString();
+    } catch(e) {
+        throw new NotFoundError(file);
+    }
     html = html.replace('</head>', `
     <link rel="stylesheet" href="style.css" data-name="vuel" />
     </head>`);

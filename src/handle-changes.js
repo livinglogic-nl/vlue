@@ -1,12 +1,14 @@
+const eventBus = require('./event-bus');
 const chrome = require('./chrome');
 const fs = require('fs');
 const path = require('path');
 const localSettings = require('./local-settings');
 const puppetTest = require('./puppet-test');
 
-module.exports = (changes) => {
+module.exports = async(changes) => {
     const { puppet } = localSettings;
 
+    const updatePromise = chrome.waitForUpdate();
     if(Object.keys(changes).length === 0) {
         chrome.rescript();
         chrome.restyle();
@@ -20,10 +22,15 @@ module.exports = (changes) => {
     }
 
     if(puppet) {
-        const puppetFile = path.join(process.cwd(), 'puppet', puppet + '.js');
+        await updatePromise;
+        console.log({
+            changes:'puppet',
+        });
+
+        const puppetFile = path.join(process.cwd(), 'puppet', puppet + '.spec.js');
         if(!fs.existsSync(puppetFile)) {
-            throw Error('Puppet script does not exist', puppetFile);
+            throw Error('Puppet script ' + puppetFile + ' does not exist');
         }
-        puppetTest.runTests( [ puppetFile ] );
+        await puppetTest.runTests( [ puppetFile ] );
     }
 }

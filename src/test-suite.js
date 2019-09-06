@@ -1,9 +1,8 @@
+const eventBus = require('./event-bus');
+const child_process = require('child_process');
 const copyRecursive = require('./copy-recursive');
 const fs = require('fs');
 const path = require('path');
-const test = require('blue-tape');
-
-const vuel = require('..');
 
 const launchProject = async(name, callback) => {
     const sourceDir = path.join('test', name);
@@ -17,9 +16,8 @@ const launchProject = async(name, callback) => {
     const originalWorkDir = process.cwd();
     process.chdir(targetDir);
 
-    if(!fs.existsSync(path.join(targetDir, 'node_modules'))) {
+    if(1 || !fs.existsSync(path.join(targetDir, 'node_modules'))) {
         child_process.execFileSync('yarn', [ 'install' ]);
-        child_process.execFileSync('npm', [ 'link', 'vuel' ], { stdio:'inherit' });
     }
 
     await callback({
@@ -28,26 +26,25 @@ const launchProject = async(name, callback) => {
             const cnt = handler( fs.readFileSync(file).toString() );
             fs.writeFileSync(file, cnt);
         },
+        get(file) {
+            return fs.readFileSync(file);
+        },
+        add(file, cnt) {
+            fs.writeFileSync(file, cnt);
+        },
+        remove(file) {
+            const url = path.join(targetDir,file);
+            fs.unlinkSync(url);
+        },
+        install(module) {
+            child_process.execFileSync('yarn', [ 'add', module ]);
+        }
     });
 
+    await new Promise(ok => setTimeout(ok,200));
     process.chdir(originalWorkDir);
 }
 
-const launchVuel = async(projectDir, callback) => {
-    await launchProject(projectDir, async(project) => {
-        let context = await vuel.start({
-            cwd: project.targetDir,
-        });
-        context.project = project;
-        await context.chrome.waitForUpdate();
-
-        await callback(context);
-        await context.stop();
-    });
-
-}
-
 module.exports = {
-    test,
-    launchVuel,
+    launchProject,
 };

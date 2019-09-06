@@ -1,3 +1,4 @@
+const log = require('./log');
 
 const micro = require('micro')
 const fs = require('fs');
@@ -6,9 +7,8 @@ let server;
 let map = {
 }
 const start = () => {
+    log.info('starting server');
     server = micro(async (req, res) => {
-        res.setHeader('Connection', 'close');
-
         let { url } = req;
         if(url === '/') {
             url = '/index.html';
@@ -33,7 +33,12 @@ const start = () => {
         }
         return '404'
     })
-    server.listen(8080);
+    server.on('error', (e) => {
+        log.error('server error', e);
+    });
+    server.listen(8080, () => {
+        log.info('server listening');
+    });
 }
 
 const stop = () => {

@@ -1,10 +1,14 @@
+const log = require('./log');
 const fs = require('fs');
 
 let config = {};
 module.exports = {
     update() {
-        const cnt = fs.readFileSync('.vuel-local.js');
-        config = eval(cnt);
+        try {
+            config = JSON.parse( fs.readFileSync('.vuel-local.json') );
+        } catch(e) {
+            log.info('No .vuel-local.json found');
+        }
     },
 
     get puppet() {
