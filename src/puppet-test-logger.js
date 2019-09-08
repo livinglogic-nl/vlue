@@ -2,14 +2,13 @@ const log = require('./log');
 
 const operatorsMap = {
     equal:(obj) => {
-        if(obj.ok) {
-            log.ok('"'+obj.actual + '" equals expected "'+obj.expected+'"');
-        } else {
-            log.fail('"'+obj.actual + '" does not equal expected "'+obj.expected+'"');
-        }
+        log.result(obj.ok, '"'+obj.actual + '" should equal "'+obj.expected+'"');
     },
     error:(obj) => {
         log.error(obj.name);
+    },
+    ok:(obj) => {
+        log.result(obj.ok, obj.name);
     },
 }
 
@@ -20,7 +19,12 @@ const map = {
         log.info('Running test "' + obj.name+'"');
     },
     assert:(obj) => {
-        operatorsMap[obj.operator](obj);
+        try {
+            operatorsMap[obj.operator](obj);
+        } catch(e) {
+            console.log(obj.operator);
+            throw e;
+        }
     },
 }
 

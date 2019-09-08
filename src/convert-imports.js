@@ -30,14 +30,10 @@ module.exports = (extensionMap, entry, vendors, locals, todo) => {
         if(path.indexOf('/') === -1) {
             vendors.add(from);
         } else {
-            if(path.indexOf('src') !== 0 && path.indexOf('node_modules') !== 0) {
-                path = 'node_modules/'+path;
-            } else if(!path.includes('.') && extensionMap[path]) {
-                path = extensionMap[path];
-            }
+            path = require('path').resolve(entry.name, '..', from).substr(process.cwd().length+1);
             if(!locals.has(path)) {
-                if(!fs.existsSync(path)) {
-                    const extensions = [ '.js', '.vue' ];
+                if(!fs.existsSync(path) || fs.lstatSync(path).isDirectory()) {
+                    const extensions = [ '.js', '.vue', '/index.js' ];
                     let ext = extensions.find(ext => fs.existsSync(path+ext));
                     if(ext) {
                         path += ext;

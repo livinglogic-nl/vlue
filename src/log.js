@@ -30,6 +30,9 @@ module.exports = {
     trace(message, ...rest) {
         log('trace', message, ...rest);
     },
+    result(ok, message, ...rest) {
+        log(ok ? 'ok' : 'fail', message, ...rest);
+    },
     ok(message, ...rest) {
         log('ok', message, ...rest);
     },

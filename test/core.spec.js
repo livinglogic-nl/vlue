@@ -14,12 +14,12 @@ module.exports = ({ test, vuelStream, launchProject }) => {
             const b = 'Forced Error.';
 
             // change to make the puppet test fail
-            await project.update('src/App.vue', (str) => str.replace(a,b));
+            await project.update('src/views/Home.vue', (str) => str.replace(a,b));
             await vuelStream.waitForFail();
 
 
             // change back to make the puppet test pass again
-            await project.update('src/App.vue', (str) => str.replace(b,a));
+            await project.update('src/views/Home.vue', (str) => str.replace(b,a));
             await vuelStream.waitForOk();
 
         });
@@ -59,7 +59,7 @@ module.exports = ({ test, vuelStream, launchProject }) => {
         });
     });
 
-    test.only('Allows to mock web requests', async(t) => {
+    test('Allows to mock web requests', async(t) => {
         await launchProject('basic', async(project) => {
             await vuelStream.waitForIdle();
             await project.add('.vuel-local.json', '{ "puppet": "mock-web" }');

@@ -1,3 +1,4 @@
+const log = require('./log');
 const path = require('path');
 const fs = require('fs');
 
@@ -25,5 +26,6 @@ module.exports = (vendor) => {
             break;
         }
     }
+    log.trace(vendor, 'resolved to', files[0]);
     return dir + files[0];
 }

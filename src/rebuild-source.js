@@ -2,7 +2,7 @@ const NotFoundError = require('./not-found-error');
 const fs = require('fs');
 
 
-const extensions = [ '', '.js', '.vue' ];
+const extensions = [ '', '.js', '.vue', '/index.js' ];
 const get = (file) => {
     let cnt;
     let resolved;

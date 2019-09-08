@@ -67,6 +67,27 @@ const getPage = async() => {
                 page = await browser.newPage();
                 await page.goto(devurl);
             }
+            page.evaluate(() => {
+                if(1 || window.vuelOverrideXHR !== true) {
+                    window.vuelOverrideXHR = true;
+
+                    class MyTest {
+                        open(method, url, async = true, user = null, password = null) {
+                        }
+                        send(body) {
+                            this.responseText = JSON.stringify({ week_number:1 });
+                            this.status = 200;
+                            this.statusText = 'OK';
+                            this.readyState = 4;
+                            this.onreadystatechange();
+                        }
+                    }
+
+                    window.XMLHttpRequest = MyTest;
+                    
+                }
+                console.log(1);
+            });
             await page.setCacheEnabled(false);
             ok(page);
         });
@@ -102,21 +123,16 @@ module.exports = {
 
     async rescript(file) {
         await (await getPage()).evaluate((file) => {
-            if(file) {
-                // file could be specified, if so only replace that one
-                delete vuelInstanced[file];
-            } else {
-                Object.keys(vuelInstanced).forEach(key => {
-                    // TODO: always keep store alive?
-                    if(key.includes('/store')) return;
-                   
-                    // only remove non-vendor
-                    if(key.indexOf('src') === 0) {
-                        console.log('refreshing', key);
-                        delete vuelInstanced[key];
-                    }
-                });
-            }
+            //TODO: if single file given, maybe only clear that file and referencing files
+            Object.keys(vuelInstanced).forEach(key => {
+                // TODO: always keep store alive?
+                if(key.includes('/store')) return;
+
+                // only remove non-vendor
+                if(key.indexOf('src') === 0) {
+                    delete vuelInstanced[key];
+                }
+            });
 
 
             const name = 'index';
