@@ -1,3 +1,5 @@
+const puppetTest = require('./src/puppet-test');
+const watch = require('./src/watch');
 const log = require('./src/log');
 const localSettings = require('./src/local-settings');
 const chrome = require('./src/chrome');
@@ -21,24 +23,44 @@ const start = async() => {
     });
     localSettings.update();
 
-    let sourcesChanged = [];
-
-    const sourceExtensions = {};
-
+    let filesChanged = [];
     let index;
-    const doUpdate = async(file) => {
+    const doUpdate = async() => {
         log.info('update');
+        const changed = filesChanged.concat();
+        filesChanged = [];
 
-        const sourcesChangedCopy = sourcesChanged.concat();
-        sourcesChanged = [];
-
+        let file = null;
+        if(changed.length === 1) {
+            file = changed[0];
+        }
         try {
-            if(!index || sourcesChangedCopy.includes('src/index.html')) {
+            if(!index || changed.includes('src/index.html')) {
                 index = prepareIndex();
                 server.add('/index.html', index);
             }
-            const changes = await rebuild(file, sourceExtensions);
+
+            const changes = await rebuild(file, {});
+            const updatePromise = chrome.waitForUpdate();
             await handleChanges(changes);
+
+            let puppetFile = null;
+            if(file && file.indexOf('puppet') === 0) {
+                puppetFile = path.join(process.cwd(), file);
+            } else {
+                const { puppet } = localSettings;
+                if(puppet) {
+                    puppetFile = path.join(process.cwd(), 'puppet', puppet + '.spec.js');
+                    if(!fs.existsSync(puppetFile)) {
+                        throw Error('Puppet script ' + puppetFile + ' does not exist');
+                    }
+                }
+            }
+
+            if(puppetFile) {
+                await updatePromise;
+                await puppetTest.runTests( [ puppetFile ] );
+            }
             log.info('idle');
         } catch(e) {
             if(e.file && e.file === 'src/index.js') {
@@ -51,42 +73,40 @@ const start = async() => {
         }
     }
 
-    let lastUpdate = null;
-    let updateId = null;
-    const update = (...rest) => {
-        let delay = 40;
-        if(updateId) {
-            clearTimeout(updateId);
-        } else {
-            if(lastUpdate !== null && (new Date() - lastUpdate) > delay) {
-                delay = 40;
-            }
-        }
-        updateId = setTimeout(() => {
-            lastUpdate = new Date();
-            updateId = null;
-            doUpdate(...rest);
-        },delay);
+    const elapsed = (date,ms) => {
+        if(!date) return true;
+        return (new Date() - date) > ms;
     }
 
-    const watchers = [
-        chokidar.watch('.vuel-local.js').on('all', (event, path) => {
-            localSettings.update();
-            update();
-        }),
+    let lastUpdate = null;
+    let lastUpdateRequest = null;
+    setInterval(() => {
+        if(!lastUpdateRequest) {
+            return;
+        }
+        if(elapsed(lastUpdateRequest,200)) {
+            lastUpdateRequest = null;
+            lastUpdate = new Date;
+            doUpdate();
+        }
+    },100);
 
-        chokidar.watch('./src').on('all', (event, path) => {
-            sourcesChanged.push(path);
-            if(event === 'add') {
-                sourceExtensions[ path.substr(0, path.lastIndexOf('.')) ] = path;
-            }
-            update(path);
-        }),
-        chokidar.watch('./puppet').on('all', (event, path) => {
-            update();
-        }),
-    ];
+    const update = () => {
+        lastUpdateRequest = new Date;
+    }
+
+    const dirs = fs.readdirSync('.');
+    watch('.', (e,file) => {
+        log.trace('💾', file);
+        if(file === '.vuel-local.json') {
+            localSettings.update();
+        }
+        filesChanged.push(file);
+        update();
+    });
+
     server.start();
+    update();
 };
 
 start();

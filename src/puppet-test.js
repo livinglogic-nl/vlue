@@ -1,11 +1,29 @@
+const log = require('./log');
 const blueTape = require('blue-tape');
 const chalk = require('chalk');
 const assert = require('assert');
 const chrome = require('./chrome');
+const puppetTestLogger = require('./puppet-test-logger');
+
 
 module.exports = {
     async runTests(urls) {
         const page = await chrome.getPage();
+
+        const map = {
+            async route(path = '') {
+                const url = 'http://localhost:8080' + '/#/' + path;
+                return this.goto(url);
+            },
+        }
+        const proxy = new Proxy(page, {
+            get(obj,key) {
+                if(obj[key]) {
+                    return obj[key];
+                }
+                return map[key];
+            },
+        });
 
         const suites = [];
         global.describe = (name, handler) => {
@@ -24,15 +42,14 @@ module.exports = {
             }
             suite.handler();
 
-            console.log(chalk.bold(suite.name));
-            test.createStream().pipe(process.stdout);
+            log.info('Running suite "' + suite.name+'"');
+            test.createStream({ objectMode: true }).on('data', puppetTestLogger);
             for await(let it of its) {
                 await new Promise(ok => {
                     test(it.name, async(t) => {
                         await it.handler({
                             t,
-                            page
-                        }).catch(e => {
+                            page: proxy,
                         });
                         ok();
                     });

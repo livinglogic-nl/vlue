@@ -2,11 +2,12 @@ const log = require('./log');
 
 const micro = require('micro')
 const fs = require('fs');
+const detect = require('detect-port');
 
 let server;
 let map = {
 }
-const start = () => {
+const start = async() => {
     log.info('starting server');
     server = micro(async (req, res) => {
         let { url } = req;

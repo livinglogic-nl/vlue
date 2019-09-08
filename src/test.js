@@ -1,3 +1,4 @@
+const VuelStream = require('./vuel-stream');
 const assert = require('assert');
 const JSONStream = require('json-stream');
 const { EventEmitter } = require('events');
@@ -10,79 +11,6 @@ const fs = require('fs');
 const testDir = path.join(__dirname, '..', 'test');
 const { launchProject } = require('../src/test-suite');
 
-class VuelStream extends EventEmitter {
-    constructor(ps) {
-        super();
-
-        let buffer = '';
-
-        let tries = 0;
-        ps.stdout.on('data', (buf) => {
-            process.stdout.write(buf);
-            buffer += buf.toString();
-            let lastIndex = -1;
-            while(1) {
-                let idx = buffer.indexOf('}', lastIndex+1);
-                if(idx !== -1) {
-                    idx++;
-                    try {
-                        const str = buffer.substr(0,idx);
-                        let obj = JSON.parse(str);
-                        tries = 0;
-                        buffer = buffer.substr(idx).trim();
-                        if(this.onObject) {
-                            this.onObject(obj);
-                        }
-                        lastIndex = -1;
-                    } catch(e) {
-                        lastIndex = idx;
-
-                    }
-                } else {
-                    break;
-                }
-            }
-        });
-        ps.stderr.on('data', (buf) => {
-            // console.log('err',buf.toString());
-        });
-    }
-
-    waitForError(message) {
-        return new Promise(ok => {
-            this.onObject = (obj) => {
-                if(obj.type === 'error' && obj.message === message) {
-                    this.onObject = null;
-                    ok();
-                }
-            };
-        });
-    }
-
-    waitForIdle() {
-        return new Promise(ok => {
-            this.onObject = (obj) => {
-                if(obj.message === 'idle') {
-                    this.onObject = null;
-                    ok();
-                }
-            };
-        });
-    }
-
-    waitForMessage(like) {
-        return new Promise(ok => {
-            this.onObject = (obj) => {
-                try {
-                    assert.deepStrictEqual(obj,like);
-                    this.onObject = null;
-                    ok();
-                } catch(e) {
-                }
-            }
-        });
-    }
-}
 
 (async() => {
     const targetDir = '/tmp/vuel-test';
@@ -92,7 +20,7 @@ class VuelStream extends EventEmitter {
     }
 
     const vuelIndex = __dirname + '/../index.js';
-    const ps = child_process.spawn('node', [ vuelIndex ], { cwd:targetDir });
+    const ps = child_process.spawn('node', [ vuelIndex ], { cwd:targetDir, stdio: ['inherit', 'pipe', 'pipe'] });
     const vuelStream = new VuelStream(ps);
 
     let files = fs.readdirSync(testDir).filter(f => f.includes('.spec.js'));
@@ -135,7 +63,7 @@ class VuelStream extends EventEmitter {
             });
         }
     }
-    // ps.kill('SIGINT');
+    ps.kill('SIGINT');
 })();
 
 

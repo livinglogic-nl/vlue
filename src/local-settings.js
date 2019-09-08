@@ -8,6 +8,7 @@ module.exports = {
             config = JSON.parse( fs.readFileSync('.vuel-local.json') );
         } catch(e) {
             log.info('No .vuel-local.json found');
+            config = {};
         }
     },
 

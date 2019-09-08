@@ -1,15 +1,26 @@
+const chalk = require('chalk');
 
-const log = (type, message, ...rest) => {
-    let obj = {
-        type,
-        message,
-    };
-    if(rest.length) {
-        obj.details = rest;
-    }
-    console.log(JSON.stringify(obj)); //, null, 4));
+const emoji = {
+    trace: '💭',
+    info: '💬',
+    error: '🔴',
+    ok: '✅',
+    fail: '❌',
+
+}
+const log = (type, ...rest) => {
+    const d = new Date();
+    const az = (nr) => nr < 10 ? '0'+nr : ''+nr;
+    const time = [
+        az(d.getHours()),
+        az(d.getMinutes()),
+        az(d.getSeconds()),
+    ].join(':');
+
+    console.log(emoji[type], rest.join(' '));
 }
 module.exports = {
+    emoji,
     info(message, ...rest) {
         log('info', message, ...rest);
     },
@@ -18,5 +29,11 @@ module.exports = {
     },
     trace(message, ...rest) {
         log('trace', message, ...rest);
+    },
+    ok(message, ...rest) {
+        log('ok', message, ...rest);
+    },
+    fail(message, ...rest) {
+        log('fail', message, ...rest);
     },
 }

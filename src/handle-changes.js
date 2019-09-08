@@ -6,9 +6,6 @@ const localSettings = require('./local-settings');
 const puppetTest = require('./puppet-test');
 
 module.exports = async(changes) => {
-    const { puppet } = localSettings;
-
-    const updatePromise = chrome.waitForUpdate();
     if(Object.keys(changes).length === 0) {
         chrome.rescript();
         chrome.restyle();
@@ -21,16 +18,4 @@ module.exports = async(changes) => {
         }
     }
 
-    if(puppet) {
-        await updatePromise;
-        console.log({
-            changes:'puppet',
-        });
-
-        const puppetFile = path.join(process.cwd(), 'puppet', puppet + '.spec.js');
-        if(!fs.existsSync(puppetFile)) {
-            throw Error('Puppet script ' + puppetFile + ' does not exist');
-        }
-        await puppetTest.runTests( [ puppetFile ] );
-    }
 }
