@@ -13,15 +13,7 @@ const replaceEnvs = (str) => {
 
 module.exports = (vendors) => {
 
-    let vendor = `var vuelImports = {};
-var vuelInstanced = {};
-var vuelImport = (name) => {
-    if(!vuelInstanced[name]) {
-        vuelInstanced[name] = vuelImports[name]();
-    }
-    return vuelInstanced[name];
-}
-`;
+    let vendor = '';
     vendors.forEach(name => {
         const dir = path.join('node_modules', name);
         if(!fs.existsSync(dir)) {
@@ -31,6 +23,7 @@ var vuelImport = (name) => {
 
         const vendorLocalFile = vendorResolver(name);
         const url = 'node_modules/'+name+'/'+vendorLocalFile;
+        log.trace(name, 'resolved to', vendorLocalFile, '('+ fs.statSync(url).size+')');
         const entry = {
             name,
             url,
@@ -40,5 +33,6 @@ var vuelImport = (name) => {
         convertExports(entry);
         vendor += entry.str;
     });
+
     return vendor;
 }

@@ -1,3 +1,6 @@
+#!/usr/bin/env node
+const terser = require('terser');
+const fsPromises = require('fs').promises;
 const puppetTest = require('./src/puppet-test');
 const watch = require('./src/watch');
 const log = require('./src/log');
@@ -11,68 +14,78 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const debounce = require('debounce');
 
-const prepareIndex = require('./src/prepare-index');
 
+let isDev = !process.argv.includes('build');
 
-const start = async() => {
-    process.on('uncaughtException', (reason) => {
-        log.error(reason.stack || reason);
-    });
-    process.on('unhandledRejection', (reason) => {
-        log.error(reason.stack || reason);
-    });
-    localSettings.update();
+let filesChanged = [];
 
-    let filesChanged = [];
-    let index;
-    const doUpdate = async() => {
-        log.info('update');
-        const changed = filesChanged.concat();
-        filesChanged = [];
-
-        let file = null;
-        if(changed.length === 1) {
-            file = changed[0];
+const updateChrome = async(changes, filesChanged) => {
+    const updatePromise = chrome.waitForUpdate();
+    if(filesChanged.length === 0) {
+        chrome.reload();
+    } else {
+        if(changes.source !== undefined || changes.vendor) {
+            log.trace('rescript');
+            chrome.rescript(changes, filesChanged);
         }
-        try {
-            if(!index || changed.includes('src/index.html')) {
-                index = prepareIndex();
-                server.add('/index.html', index);
-            }
+        if(changes.styles) {
+            log.trace('restyle');
+            chrome.restyle(changes);
+        }
+    }
+    await updatePromise;
+}
 
-            const changes = await rebuild(file, {});
-            const updatePromise = chrome.waitForUpdate();
-            await handleChanges(changes);
-
-            let puppetFile = null;
-            if(file && file.indexOf('puppet') === 0) {
-                puppetFile = path.join(process.cwd(), file);
-            } else {
-                const { puppet } = localSettings;
-                if(puppet) {
-                    puppetFile = path.join(process.cwd(), 'puppet', puppet + '.spec.js');
-                    if(!fs.existsSync(puppetFile)) {
-                        throw Error('Puppet script ' + puppetFile + ' does not exist');
-                    }
-                }
-            }
-
-            if(puppetFile) {
-                await updatePromise;
-                await puppetTest.runTests( [ puppetFile ] );
-            }
-            log.info('idle');
-        } catch(e) {
-            if(e.file && e.file === 'src/index.js') {
-                log.error('vuel relies on src/index.js');
-            } else if(e.file && e.file === 'src/index.html') {
-                log.error('vuel relies on src/index.html');
-            } else {
-                throw e;
+const runPuppetTest = async(file) => {
+    let puppetFile = null;
+    if(file && file.indexOf('puppet') === 0) {
+        puppetFile = path.join(process.cwd(), file);
+    } else {
+        const { puppet } = localSettings;
+        if(puppet) {
+            puppetFile = path.join(process.cwd(), 'puppet', puppet + '.spec.js');
+            if(!fs.existsSync(puppetFile)) {
+                throw Error('Puppet script ' + puppetFile + ' does not exist');
             }
         }
     }
 
+    if(puppetFile) {
+        await puppetTest.runTests( [ puppetFile ] );
+    }
+}
+
+
+const update = async(lastUpdate) => {
+    const changed = filesChanged.concat();
+    filesChanged = [];
+    const file = changed.length === 1 ? changed[0] : null;
+
+    const result = await rebuild({
+        isDev: true,
+        filesChanged: changed,
+    });
+
+    const updatedKeys = Object.keys(result);
+    if(updatedKeys.length > 0) {
+        const { index, source, vendor, styles } = result;
+        log.info('update', updatedKeys);
+        if(index) { server.add('/index.html', index); }
+        if(source) { server.add('/index.js', source); }
+        if(vendor) { server.add('/vendor.js', vendor); }
+
+        styles.forEach(s => {
+            server.add('/'+s.name, s.str);
+        });
+
+        await updateChrome(result, changed);
+    }
+
+    await runPuppetTest(file);
+    log.info('idle');
+}
+
+const startDev = () => {
     const elapsed = (date,ms) => {
         if(!date) return true;
         return (new Date() - date) > ms;
@@ -86,12 +99,12 @@ const start = async() => {
         }
         if(elapsed(lastUpdateRequest,200)) {
             lastUpdateRequest = null;
+            update(lastUpdate);
             lastUpdate = new Date;
-            doUpdate();
         }
     },100);
 
-    const update = () => {
+    const requestUpdate = () => {
         lastUpdateRequest = new Date;
     }
 
@@ -102,11 +115,52 @@ const start = async() => {
             localSettings.update();
         }
         filesChanged.push(file);
-        update();
+        requestUpdate();
     });
 
+    server.add('/vuel-support.js', fs.readFileSync( path.join(__dirname, 'src', 'web', 'vuel-support.js')) );
     server.start();
-    update();
+    requestUpdate();
+}
+
+const startBuild = async() => {
+    const result = await rebuild({
+        isDev: false,
+        filesChanged:[],
+    });
+    let { index, source, vendor, styles } = result;
+    let style = styles.map(s => s.str).join('');
+
+    // minify source
+
+    source = terser.minify(source).code;
+
+    // minify style
+
+    await Promise.all([
+        fsPromises.writeFile('dist/index.html', index),
+        fsPromises.writeFile('dist/index.js', source),
+        fsPromises.writeFile('dist/vendor.js', vendor),
+        fsPromises.writeFile('dist/style.css', style),
+    ]);
+    log.info('built');
+}
+
+const start = async() => {
+    process.on('uncaughtException', (reason) => {
+        log.error(reason.stack || reason);
+    });
+    process.on('unhandledRejection', (reason) => {
+        log.error(reason.stack || reason);
+    });
+    localSettings.update();
+
+    if(process.argv.includes('build')) {
+        startBuild();
+    } else {
+        startDev();
+    }
+
 };
 
 start();

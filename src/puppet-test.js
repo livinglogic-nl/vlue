@@ -1,3 +1,4 @@
+const PageExtension = require('./page-extension');
 const log = require('./log');
 const blueTape = require('blue-tape');
 const chalk = require('chalk');
@@ -5,17 +6,13 @@ const assert = require('assert');
 const chrome = require('./chrome');
 const puppetTestLogger = require('./puppet-test-logger');
 
-
 module.exports = {
     async runTests(urls) {
         const page = await chrome.getPage();
 
-        const map = {
-            async route(path = '') {
-                const url = 'http://localhost:8080' + '/#/' + path;
-                return this.goto(url);
-            },
-        }
+
+        const map = new PageExtension(page);
+        await map.init(page);
         const proxy = new Proxy(page, {
             get(obj,key) {
                 if(obj[key]) {

@@ -1,5 +1,5 @@
 const fs = require('fs');
-module.exports = (extensionMap, entry, vendors, locals, todo) => {
+module.exports = (entry, vendors, locals, todo) => {
     entry.str = entry.str.replace(/^import (.+?)?( from )?'(.+?)';?/gm, (all, ...rest) => {
         let as = null, from = null;
         if(rest.length === 5) {
@@ -30,7 +30,11 @@ module.exports = (extensionMap, entry, vendors, locals, todo) => {
         if(path.indexOf('/') === -1) {
             vendors.add(from);
         } else {
-            path = require('path').resolve(entry.name, '..', from).substr(process.cwd().length+1);
+            if(from.charAt(0) === '.') {
+                path = require('path').resolve(entry.name, '..', from).substr(process.cwd().length+1);
+            } else {
+                path = require('path').resolve('node_modules', from).substr(process.cwd().length+1);
+            }
             if(!locals.has(path)) {
                 if(!fs.existsSync(path) || fs.lstatSync(path).isDirectory()) {
                     const extensions = [ '.js', '.vue', '/index.js' ];

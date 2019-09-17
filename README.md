@@ -17,7 +17,6 @@ Start up is pretty much instant:
 
 TODO insert amazing gif of speed (with time to prove)
 
-
 ### Assumes Chrome
 By assuming a recent browser while developing, code does not have to be babelicious. Assuming Chrome allows us to remote control it with puppeteer, eliminating seperate hot-reloading scripts.
 
@@ -26,6 +25,21 @@ Puppeteer is already amazing in and out of itself (TY).
 A little trick i thought of makes it even more mindblowing... just look at em go:
 
 TODO insert amazing gif of speed (with time to prove)
+
+## Scope
+
+### Development
+- Hot-Reloading
+- ESLint with autofix on triple save
+- Puppeteer integration
+- Request mocking
+- Websocket mocking
+
+### Production build
+- Terser
+- Babelify
+- Minify
+
 
 ## Install
 

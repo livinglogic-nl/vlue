@@ -1,8 +1,10 @@
+const path = require('path');
 const log = require('./log');
 
 const micro = require('micro')
 const fs = require('fs');
 const detect = require('detect-port');
+
 
 let server;
 let map = {
@@ -32,7 +34,7 @@ const start = async() => {
             } catch(e) {
             }
         }
-        return '404'
+        micro.send(res, 404, 'File not found');
     })
     server.on('error', (e) => {
         log.error('server error', e);

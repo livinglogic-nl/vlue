@@ -26,6 +26,7 @@ const startup = async() => {
             executablePath: loc,
             userDataDir: '/tmp/vuel-data-dir',
             headless: false,
+            defaultViewport: null,
             args: [
                 '-no-first-run',
             ],
@@ -67,27 +68,6 @@ const getPage = async() => {
                 page = await browser.newPage();
                 await page.goto(devurl);
             }
-            page.evaluate(() => {
-                if(1 || window.vuelOverrideXHR !== true) {
-                    window.vuelOverrideXHR = true;
-
-                    class MyTest {
-                        open(method, url, async = true, user = null, password = null) {
-                        }
-                        send(body) {
-                            this.responseText = JSON.stringify({ week_number:1 });
-                            this.status = 200;
-                            this.statusText = 'OK';
-                            this.readyState = 4;
-                            this.onreadystatechange();
-                        }
-                    }
-
-                    window.XMLHttpRequest = MyTest;
-                    
-                }
-                console.log(1);
-            });
             await page.setCacheEnabled(false);
             ok(page);
         });
@@ -121,48 +101,52 @@ module.exports = {
         handleWaiting();
     },
 
-    async rescript(file) {
-        await (await getPage()).evaluate((file) => {
-            //TODO: if single file given, maybe only clear that file and referencing files
-            Object.keys(vuelInstanced).forEach(key => {
-                // TODO: always keep store alive?
-                if(key.includes('/store')) return;
+    async rescript(changes, filesChanged) {
+        const page = await getPage();
 
-                // only remove non-vendor
-                if(key.indexOf('src') === 0) {
-                    delete vuelInstanced[key];
-                }
+        //clear old instances
+        await page.evaluate((names) => {
+            names.forEach(name => {
+                delete vuelInstanced[name];
             });
+        }, filesChanged);
+        await page.evaluate(changes.source);
 
-
-            const name = 'index';
-            try {
-                const a = document.querySelector('script[src*='+name+']');
-                document.body.removeChild(a);
-            } catch(e) {
-            }
-
-            const b = document.createElement('script');
-            b.src = name + '.js';
-            document.body.appendChild(b);
-        },file);
+        const name = filesChanged[0];
+        const isVueComponent = filesChanged.length === 1 && name.includes('.vue');
+        console.log(name, isVueComponent);
+        if(isVueComponent) {
+            await page.evaluate((name) => {
+                console.log('reloading', name);
+                const api = vuelImport('vue-hot-reload-api');
+                api.reload(name, vuelImport(name));
+            },name);
+        } else {
+            await page.evaluate(() => {
+                vuelImport('src/index.js');
+            });
+        }
         handleWaiting();
     },
 
-    async restyle() {
-        (await getPage()).evaluate(() => {
-            var a = document.querySelector('link[data-name=vuel]');
+    async restyle(changes) {
+        const page = await getPage();
+        await Promise.all(
+            changes.styles.map(s => page.evaluate(({name,str}) => {
+                var a = document.querySelector('style[data-name="'+name+'"]');
 
-            var b = document.createElement('link');
-            b.rel = 'stylesheet';
-            b.href = 'style.css';
-            b.dataset.name = 'vuel';
-            document.head.appendChild(b);
-
-            if(a) {
-                document.head.removeChild(a);
-            }
-        });
+                var b = document.createElement('style');
+                b.dataset.name = name;
+                b.innerHTML = str;
+                if(a) {
+                    document.head.insertBefore(b,a);
+                    document.head.removeChild(a);
+                    console.log('replaced');
+                } else {
+                    document.head.appendChild(b);
+                }
+            }, s))
+        );
         handleWaiting();
     },
 

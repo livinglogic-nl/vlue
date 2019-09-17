@@ -1,6 +1,6 @@
-const NotFoundError = require('./not-found-error');
 const fs = require('fs');
-
+const svgToDataurl = require('svg-to-dataurl');
+const NotFoundError = require('./not-found-error');
 
 const extensions = [ '', '.js', '.vue', '/index.js' ];
 const get = (file) => {
@@ -27,12 +27,12 @@ const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
 const splitVue = require('./split-vue');
 
-module.exports = async(sourceExtensions) => {
+module.exports = async(root) => {
+
     const vendors = new Set();
     const locals = new Set();
 
-    const root = 'src/index.js';
-    const entries = [];
+    const scripts = [];
     const styles = [];
 
     const todo = [ root ];
@@ -49,15 +49,18 @@ module.exports = async(sourceExtensions) => {
             splitVue(entry, styles);
         } else if(path.includes('.svg')) {
             const svg = entry.str;
-            entry.str = `module.exports = '${svg}';`;
+            const dataUri = svgToDataurl(svg)
+                .replace(/\(/g,'%28')
+                .replace(/\)/g,'%29');
+            entry.str = 'module.exports = "'+dataUri+'"';
         }
 
-        convertImports(sourceExtensions, entry, vendors, locals, todo);
+        convertImports(entry, vendors, locals, todo);
         convertExports(entry);
-        entries.push(entry);
+        scripts.push(entry);
     }
     return {
-        entries,
+        scripts,
         vendors,
         styles,
     };

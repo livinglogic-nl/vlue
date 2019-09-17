@@ -1,3 +1,4 @@
+const log = require('./log');
 const VuelStream = require('./vuel-stream');
 const assert = require('assert');
 const JSONStream = require('json-stream');
@@ -52,15 +53,25 @@ const { launchProject } = require('../src/test-suite');
             tests = [ only ];
         }
 
+        const timeout = 3000;
         const test = blueTape.createHarness();
         test.createStream().pipe(process.stdout);
         for await(let obj of tests) {
-            await new Promise(ok => {
-                test(obj.name, async(t)=> {
-                    await obj.callback(t);
-                    ok();
-                });
+            let timeoutId;
+            await Promise.race([
+                new Promise(ok => {
+                    test(obj.name, async(t)=> {
+                        await obj.callback(t);
+                        ok();
+                    });
+                }),
+                new Promise( (ok,fail) => {
+                    timeoutId = setTimeout(fail,timeout);
+                }),
+            ]).catch(e => {
+                log.error('Timeout of '+timeout+'ms passed');
             });
+            clearTimeout(timeoutId);
         }
     }
     ps.kill('SIGINT');

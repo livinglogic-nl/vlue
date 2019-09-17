@@ -3,18 +3,28 @@ const path = require('path');
 const fs = require('fs');
 
 const filters = [
-    (file) => file.includes('.common'),
-    (file) => file.includes('.dev'),
+    // (file) => file.includes('.common'),
+    // (file) => file.includes('.dev'),
+    // (file) => file.match(/\.js$/),
+    (file) => !file.includes('.esm'),
+    (file) => file.includes('.min'),
     (file) => file.match(/\.js$/),
 ];
 
 module.exports = (vendor) => {
     let files;
-    let dir = 'dist/';
+    let subdir = 'dist' + path.sep;
+
+    const vendorPath = path.join('node_modules', vendor);
+    const bullsEye = subdir + vendor + '.min.js';
+    if(fs.existsSync(path.join(vendorPath,bullsEye))) {
+        return bullsEye;
+    }
     try {
         files = fs.readdirSync(path.join('node_modules', vendor, 'dist'));
+        console.log(files);
     } catch(e) {
-        dir = '';
+        subdir = '';
         files = fs.readdirSync(path.join('node_modules', vendor));
     }
     for(let i=0; i<filters.length; i++) {
@@ -26,6 +36,5 @@ module.exports = (vendor) => {
             break;
         }
     }
-    log.trace(vendor, 'resolved to', files[0]);
-    return dir + files[0];
+    return subdir + files[0];
 }

@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 
 const emoji = {
-    trace: '💭',
+    trace: '🌊',
     info: '💬',
     error: '🔴',
     ok: '✅',
