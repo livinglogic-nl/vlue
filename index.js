@@ -11,7 +11,6 @@ const rebuild = require('./src/rebuild');
 const server = require('./src/server');
 const path = require('path');
 const fs = require('fs');
-const chokidar = require('chokidar');
 const debounce = require('debounce');
 
 
@@ -73,10 +72,6 @@ const update = async(lastUpdate) => {
         if(index) { server.add('/index.html', index); }
         if(source) { server.add('/index.js', source); }
         if(vendor) { server.add('/vendor.js', vendor); }
-
-        styles.forEach(s => {
-            server.add('/'+s.name, s.str);
-        });
 
         await updateChrome(result, changed);
     }

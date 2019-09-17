@@ -10,9 +10,7 @@ const setsEqual = require('./sets-equal');
 const sourceMap = require('./source-map');
 
 let prevIndex = null;
-let prevSource = null;
 let prevVendors = null;
-let prevStyle = null;
 
 const getHotReloadSource = () => {
     return fs.readFileSync( path.join(
@@ -38,7 +36,7 @@ module.exports = async({ isDev, filesChanged }) => {
 
         const changes = {};
         const result = await rebuildSource(root);
-        let { scripts, vendors, styles } = result;
+        let { scripts, styles, vendors } = result;
 
         let source = scripts.map(e => e.str ).join('');
         if(root === 'src/index.js') {
@@ -49,7 +47,6 @@ module.exports = async({ isDev, filesChanged }) => {
         source += sourceMap.sourceMappingURL(map);
         changes.source = source;
 
-        // TODO handle vendors through dependency map
         if(!prevVendors || !setsEqual(vendors, prevVendors)) {
             let vendor = rebuildVendor(vendors);
             const hotReload = {

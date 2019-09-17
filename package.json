@@ -15,7 +15,6 @@
   "dependencies": {
     "acorn": "^6.2.1",
     "blue-tape": "^1.0.0",
-    "chokidar": "^3.0.0",
     "chrome-location": "^1.2.1",
     "debounce": "^1.2.0",
     "detect-port": "^1.3.0",

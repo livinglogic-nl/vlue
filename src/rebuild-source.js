@@ -37,7 +37,7 @@ module.exports = async(root) => {
 
     const todo = [ root ];
     while(todo.length) {
-        let path = todo.shift();
+        const path = todo.shift();
         let contents = get(path);
         const entry = {
             path,
