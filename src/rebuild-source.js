@@ -4,7 +4,7 @@ const NotFoundError = require('./not-found-error');
 
 const extensions = [ '', '.js', '.vue', '/index.js' ];
 const get = (file) => {
-    let cnt;
+    let cnt = null;
     let resolved;
     extensions.some(ext => {
         try {
@@ -14,7 +14,7 @@ const get = (file) => {
         } catch(e) {}
         return false;
     });
-    if(typeof(cnt) === 'string') {
+    if(cnt !== null) {
         return {
             cnt,
             resolved,
