@@ -124,7 +124,7 @@ const startBuild = async() => {
         filesChanged:[],
     });
     let { index, source, vendor, styles } = result;
-    let style = styles.map(s => s.str).join('');
+    let style = styles.map(s => s.code).join('');
 
     // minify source
 

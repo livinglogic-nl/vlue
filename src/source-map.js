@@ -43,16 +43,16 @@ const create = (entries) => {
     const sections = [];
 
     let offset = 0;
-    entries.forEach(e => {
-        let len = lines(e.str);
+    entries.forEach(entry => {
+        let len = lines(entry.code);
         sections.push({
             offset: { line:offset, column:0 },
             map: {
                 version:3,
                 file:'index.js',
-                sources: [ e.path ],
-                sourcesContent: [ e.source ],
-                mappings: getMappings(e),
+                sources: [ entry.path ],
+                sourcesContent: [ entry.source ],
+                mappings: getMappings(entry),
             }
         });
         offset += (len-1);

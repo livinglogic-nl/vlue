@@ -5,20 +5,20 @@ const NotFoundError = require('./not-found-error');
 
 const extensions = [ '', '.js', '.vue', '/index.js' ];
 const getEntry = (url) => {
-    let str = null;
+    let code = null;
     let name;
     extensions.some(ext => {
         try {
-            str = fs.readFileSync(url+ext).toString().trim();
+            code = fs.readFileSync(url+ext).toString().trim();
             name = url+ext;
             return true;
         } catch(e) {}
         return false;
     });
-    if(str !== null) {
+    if(code !== null) {
         return {
             url,
-            str,
+            code,
             name,
         };
     }
@@ -41,7 +41,7 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
     while(todo.length) {
         const url = todo.shift();
         const entry = getEntry(url);
-        entry.source = entry.str;
+        entry.source = entry.code;
 
         const ext = path.extname(entry.name);
         switch(ext) {
@@ -50,11 +50,11 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
                 break;
 
             case '.svg':
-                const svg = entry.str;
+                const svg = entry.code;
                 const dataUri = svgToDataurl(svg)
                     .replace(/\(/g,'%28')
                     .replace(/\)/g,'%29');
-                entry.str = 'module.exports = "'+dataUri+'"';
+                entry.code = 'module.exports = "'+dataUri+'"';
                 break;
         }
 

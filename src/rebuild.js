@@ -44,7 +44,7 @@ module.exports = async({ isDev, filesChanged }) => {
         const result = await rebuildSource(root, sourceBundler, vendorBundler);
         let { scripts, styles, vendors } = result;
 
-        let source = scripts.map(e => e.str ).join('');
+        let source = scripts.map(e => e.code ).join('');
         if(root === 'src/index.js') {
             source += `vuelImport('src/index.js');`;
         }
@@ -57,10 +57,10 @@ module.exports = async({ isDev, filesChanged }) => {
             let vendor = rebuildVendor(vendors);
             const hotReload = {
                 name: 'vue-hot-reload-api',
-                str: getHotReloadSource(),
+                code: getHotReloadSource(),
             };
             convertExports(hotReload);
-            vendor += hotReload.str;
+            vendor += hotReload.code;
 
             prevVendors = vendors;
             changes.vendor = vendor;

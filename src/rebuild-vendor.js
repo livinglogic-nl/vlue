@@ -27,11 +27,11 @@ module.exports = (vendors) => {
         const entry = {
             name,
             url,
-            str: get(url),
+            code: get(url),
         };
-        entry.str = replaceEnvs(entry.str);
+        entry.code = replaceEnvs(entry.code);
         convertExports(entry);
-        vendor += entry.str;
+        vendor += entry.code;
     });
 
     return vendor;

@@ -1,6 +1,6 @@
 const sass = require('node-sass');
 module.exports = (entry, styles) => {
-    let [ script, rest ] = entry.str.split('</script>');
+    let [ script, rest ] = entry.code.split('</script>');
     script = script.replace('<script>\n', '');
 
     if(script.includes('<template>')) {
@@ -21,7 +21,7 @@ module.exports = (entry, styles) => {
             });
         }
     }
-    entry.str = script;
+    entry.code = script;
 
 
 }

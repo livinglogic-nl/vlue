@@ -1,9 +1,9 @@
 module.exports = (entry) => {
-    let { str } = entry;
-    str = str.replace('export default', 'module.exports =');
-    str = `vuelImports['${entry.name}'] = (() => { var exports = {}; var module = { exports };
-${str}
+    let { code } = entry;
+    code = code.replace('export default', 'module.exports =');
+    code = `vuelImports['${entry.name}'] = (() => { var exports = {}; var module = { exports };
+${code}
 return module.exports;});
 `;
-    entry.str = str;
+    entry.code = code;
 };

@@ -1,6 +1,6 @@
 const fs = require('fs');
 module.exports = (entry, vendors, locals, todo) => {
-    entry.str = entry.str.replace(/^import (.+?)?( from )?'(.+?)';?/gm, (all, ...rest) => {
+    entry.code = entry.code.replace(/^import (.+?)?( from )?'(.+?)';?/gm, (all, ...rest) => {
         let as = null, from = null;
         if(rest.length === 5) {
             [as,,from] = rest;
