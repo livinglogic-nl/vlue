@@ -1,3 +1,5 @@
+const VendorBundler = require('./VendorBundler');
+const SourceBundler = require('./SourceBundler');
 const convertExports = require('./convert-exports');
 const path = require('path');
 const fs = require('fs');
@@ -11,6 +13,10 @@ const sourceMap = require('./source-map');
 
 let prevIndex = null;
 let prevVendors = null;
+
+
+const sourceBundler = new SourceBundler();
+const vendorBundler = new VendorBundler();
 
 const getHotReloadSource = () => {
     return fs.readFileSync( path.join(
@@ -35,7 +41,7 @@ module.exports = async({ isDev, filesChanged }) => {
         }
 
         const changes = {};
-        const result = await rebuildSource(root);
+        const result = await rebuildSource(root, sourceBundler, vendorBundler);
         let { scripts, styles, vendors } = result;
 
         let source = scripts.map(e => e.str ).join('');

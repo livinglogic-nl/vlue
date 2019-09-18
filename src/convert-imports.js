@@ -11,7 +11,7 @@ module.exports = (entry, vendors, locals, todo) => {
         let path = from;
         if(path.indexOf('.') === 0)  {
             let nodes = from.split('/');
-            let resolved = entry.path.split('/');
+            let resolved = entry.url.split('/');
             resolved.pop();
             while(1) {
                 if(nodes[0] === '..') {

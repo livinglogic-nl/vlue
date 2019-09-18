@@ -1,33 +1,35 @@
+const path = require('path');
 const fs = require('fs');
 const svgToDataurl = require('svg-to-dataurl');
 const NotFoundError = require('./not-found-error');
 
 const extensions = [ '', '.js', '.vue', '/index.js' ];
-const get = (file) => {
-    let cnt = null;
-    let resolved;
+const getEntry = (url) => {
+    let str = null;
+    let name;
     extensions.some(ext => {
         try {
-            cnt = fs.readFileSync(file+ext).toString().trim();
-            resolved = file+ext;
+            str = fs.readFileSync(url+ext).toString().trim();
+            name = url+ext;
             return true;
         } catch(e) {}
         return false;
     });
-    if(cnt !== null) {
+    if(str !== null) {
         return {
-            cnt,
-            resolved,
+            url,
+            str,
+            name,
         };
     }
-    throw new NotFoundError(file);
+    throw new NotFoundError(url);
 }
 
 const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
 const splitVue = require('./split-vue');
 
-module.exports = async(root) => {
+module.exports = async(root, sourceBundler, vendorBundler) => {
 
     const vendors = new Set();
     const locals = new Set();
@@ -37,22 +39,23 @@ module.exports = async(root) => {
 
     const todo = [ root ];
     while(todo.length) {
-        const path = todo.shift();
-        let contents = get(path);
-        const entry = {
-            path,
-            name: contents.resolved,
-            str: contents.cnt,
-        };
+        const url = todo.shift();
+        const entry = getEntry(url);
         entry.source = entry.str;
-        if(path.includes('.vue') || !path.includes('.')) {
-            splitVue(entry, styles);
-        } else if(path.includes('.svg')) {
-            const svg = entry.str;
-            const dataUri = svgToDataurl(svg)
-                .replace(/\(/g,'%28')
-                .replace(/\)/g,'%29');
-            entry.str = 'module.exports = "'+dataUri+'"';
+
+        const ext = path.extname(entry.name);
+        switch(ext) {
+            case '.vue':
+                splitVue(entry, styles);
+                break;
+
+            case '.svg':
+                const svg = entry.str;
+                const dataUri = svgToDataurl(svg)
+                    .replace(/\(/g,'%28')
+                    .replace(/\)/g,'%29');
+                entry.str = 'module.exports = "'+dataUri+'"';
+                break;
         }
 
         convertImports(entry, vendors, locals, todo);
