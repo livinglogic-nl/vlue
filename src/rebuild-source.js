@@ -1,64 +1,43 @@
+const SvgHandler = require('./SvgHandler');
+const VueHandler = require('./VueHandler');
+const Handler = require('./Handler');
+const resolveEntry = require('./resolve-entry');
+
 const path = require('path');
 const fs = require('fs');
-const svgToDataurl = require('svg-to-dataurl');
-const NotFoundError = require('./not-found-error');
-
-const extensions = [ '', '.js', '.vue', '/index.js' ];
-const getEntry = (url) => {
-    let code = null;
-    let name;
-    extensions.some(ext => {
-        try {
-            code = fs.readFileSync(url+ext).toString().trim();
-            name = url+ext;
-            return true;
-        } catch(e) {}
-        return false;
-    });
-    if(code !== null) {
-        return {
-            url,
-            code,
-            name,
-        };
-    }
-    throw new NotFoundError(url);
-}
 
 const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
 const splitVue = require('./split-vue');
 
+
+const handlerMap = {
+    vue: new VueHandler(),
+    svg: new SvgHandler(),
+}
+const defaultHandler = new Handler();
+
 module.exports = async(root, sourceBundler, vendorBundler) => {
-
     const vendors = new Set();
-    const locals = new Set();
-
     const scripts = [];
     const styles = [];
+
 
     const todo = [ root ];
     while(todo.length) {
         const url = todo.shift();
-        const entry = getEntry(url);
-        entry.source = entry.code;
-
-        const ext = path.extname(entry.name);
-        switch(ext) {
-            case '.vue':
-                splitVue(entry, styles);
-                break;
-
-            case '.svg':
-                const svg = entry.code;
-                const dataUri = svgToDataurl(svg)
-                    .replace(/\(/g,'%28')
-                    .replace(/\)/g,'%29');
-                entry.code = 'module.exports = "'+dataUri+'"';
-                break;
+        let entry = resolveEntry(url);
+        let handler = handlerMap[entry.ext];
+        if(!handler) {
+            handler = defaultHandler;
         }
 
-        convertImports(entry, vendors, locals, todo);
+        if(!handler.detectChanges(entry, sourceBundler)) {
+            continue;
+        }
+        handler.process(entry, styles, sourceBundler);
+
+        convertImports(entry, vendors, todo, vendorBundler);
         convertExports(entry);
         scripts.push(entry);
     }
@@ -66,6 +45,8 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
         scripts,
         vendors,
         styles,
+        sourceBundler,
+        vendorBundler,
     };
 
 }

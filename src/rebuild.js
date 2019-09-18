@@ -1,20 +1,16 @@
-const VendorBundler = require('./VendorBundler');
-const SourceBundler = require('./SourceBundler');
-const convertExports = require('./convert-exports');
 const path = require('path');
 const fs = require('fs');
+
+const VendorBundler = require('./VendorBundler');
+const SourceBundler = require('./SourceBundler');
+
 const log = require('./log');
 const prepareIndex = require('./prepare-index');
-const rebuildVendor = require('./rebuild-vendor');
 const rebuildSource = require('./rebuild-source');
 const server = require('./server');
-const setsEqual = require('./sets-equal');
 const sourceMap = require('./source-map');
 
 let prevIndex = null;
-let prevVendors = null;
-
-
 const sourceBundler = new SourceBundler();
 const vendorBundler = new VendorBundler();
 
@@ -40,11 +36,14 @@ module.exports = async({ isDev, filesChanged }) => {
             }
         }
 
-        const changes = {};
-        const result = await rebuildSource(root, sourceBundler, vendorBundler);
-        let { scripts, styles, vendors } = result;
+        const changes = {
+            sourceBundler,
+            vendorBundler,
+        };
 
-        let source = scripts.map(e => e.code ).join('');
+        const result = await rebuildSource(root, sourceBundler, vendorBundler);
+        let { scripts, styles } = result;
+        let source = scripts.map(e => e.code).join('');
         if(root === 'src/index.js') {
             source += `vuelImport('src/index.js');`;
         }
@@ -52,21 +51,6 @@ module.exports = async({ isDev, filesChanged }) => {
         const map = sourceMap.create(scripts);
         source += sourceMap.sourceMappingURL(map);
         changes.source = source;
-
-        if(!prevVendors || !setsEqual(vendors, prevVendors)) {
-            let vendor = rebuildVendor(vendors);
-            const hotReload = {
-                name: 'vue-hot-reload-api',
-                code: getHotReloadSource(),
-            };
-            convertExports(hotReload);
-            vendor += hotReload.code;
-
-            prevVendors = vendors;
-            changes.vendor = vendor;
-        }
-
-
         changes.styles = styles;
  
         if(!prevIndex || filesChanged.includes('src/index.html')) {

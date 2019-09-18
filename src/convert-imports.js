@@ -1,5 +1,5 @@
 const fs = require('fs');
-module.exports = (entry, vendors, locals, todo) => {
+module.exports = (entry, vendors, todo, vendorBundler) => {
     entry.code = entry.code.replace(/^import (.+?)?( from )?'(.+?)';?/gm, (all, ...rest) => {
         let as = null, from = null;
         if(rest.length === 5) {
@@ -29,13 +29,16 @@ module.exports = (entry, vendors, locals, todo) => {
 
         if(path.indexOf('/') === -1) {
             vendors.add(from);
+            vendorBundler.add(from);
         } else {
             if(from.charAt(0) === '.') {
+                //relative to current entry
                 path = require('path').resolve(entry.name, '..', from).substr(process.cwd().length+1);
             } else {
+                //subreference to a node_modules folder
                 path = require('path').resolve('node_modules', from).substr(process.cwd().length+1);
             }
-            if(!locals.has(path)) {
+            if(!todo.includes(path)) {
                 if(!fs.existsSync(path) || fs.lstatSync(path).isDirectory()) {
                     const extensions = [ '.js', '.vue', '/index.js' ];
                     let ext = extensions.find(ext => fs.existsSync(path+ext));
@@ -45,11 +48,9 @@ module.exports = (entry, vendors, locals, todo) => {
                         console.log('could not find', path);
                     }
                 }
-            }
-
-            if(!locals.has(path)) {
-                locals.add(path);
-                todo.push(path);
+                if(!todo.includes(path)) {
+                    todo.push(path);
+                }
             }
         }
         if(as) {

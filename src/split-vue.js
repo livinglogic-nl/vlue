@@ -1,4 +1,5 @@
 const sass = require('node-sass');
+
 module.exports = (entry, styles) => {
     let [ script, rest ] = entry.code.split('</script>');
     script = script.replace('<script>\n', '');

@@ -67,12 +67,17 @@ const update = async(lastUpdate) => {
 
     const updatedKeys = Object.keys(result);
     if(updatedKeys.length > 0) {
-        const { index, source, vendor, styles } = result;
+        const { index, source, styles } = result;
+        const { sourceBundler, vendorBundler } = result;
+        
         log.info('update', updatedKeys);
         if(index) { server.add('/index.html', index); }
         if(source) { server.add('/index.js', source); }
-        if(vendor) { server.add('/vendor.js', vendor); }
 
+        if(vendorBundler.changed()) {
+            const bundle = vendorBundler.buildScript(true);
+            server.add('/vendor.js', bundle);
+        }
         await updateChrome(result, changed);
     }
 
