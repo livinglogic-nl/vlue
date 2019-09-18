@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const terser = require('terser');
+const prepareIndex = require('./src/prepare-index');
 const fsPromises = require('fs').promises;
 const puppetTest = require('./src/puppet-test');
 const watch = require('./src/watch');
@@ -14,6 +15,9 @@ const fs = require('fs');
 const debounce = require('debounce');
 
 
+const SourceBundler = require('./src/SourceBundler');
+const VendorBundler = require('./src/VendorBundler');
+
 let isDev = !process.argv.includes('build');
 
 let filesChanged = [];
@@ -23,13 +27,17 @@ const updateChrome = async(changes, filesChanged) => {
     if(filesChanged.length === 0) {
         chrome.reload();
     } else {
-        if(changes.source !== undefined || changes.vendor) {
-            log.trace('rescript');
-            chrome.rescript(changes, filesChanged);
-        }
-        if(changes.styles) {
-            log.trace('restyle');
-            chrome.restyle(changes);
+        if(changes.source || changes.styles) {
+            if(changes.source !== undefined) {
+                log.trace('rescript');
+                chrome.rescript(changes, filesChanged);
+            }
+            if(changes.styles) {
+                log.trace('restyle');
+                chrome.restyle(changes);
+            }
+        } else {
+            return;
         }
     }
     await updatePromise;
@@ -54,6 +62,14 @@ const runPuppetTest = async(file) => {
     }
 }
 
+const sourceBundler = new SourceBundler();
+const vendorBundler = new VendorBundler();
+
+
+let lastChanges;
+const renderIndex = () => {
+    return prepareIndex({ isDev, changes:lastChanges });
+}
 
 const update = async(lastUpdate) => {
     const changed = filesChanged.concat();
@@ -61,23 +77,30 @@ const update = async(lastUpdate) => {
     const file = changed.length === 1 ? changed[0] : null;
 
     const result = await rebuild({
-        isDev: true,
         filesChanged: changed,
+        sourceBundler,
+        vendorBundler,
     });
+    lastChanges = result;
 
-    const updatedKeys = Object.keys(result);
-    if(updatedKeys.length > 0) {
-        const { index, source, styles } = result;
-        const { sourceBundler, vendorBundler } = result;
-        
-        log.info('update', updatedKeys);
-        if(index) { server.add('/index.html', index); }
-        if(source) { server.add('/index.js', source); }
+    const { source, styles } = result;
+    if(source) { server.add('/index.js', source); }
 
-        if(vendorBundler.changed()) {
-            const bundle = vendorBundler.buildScript(true);
-            server.add('/vendor.js', bundle);
-        }
+    let fullReload = false;
+    if(changed.includes('src/index.html')) {
+        console.log('index changed!');
+        fullReload = true;
+    }
+
+    if(vendorBundler.changed()) {
+        const bundle = vendorBundler.buildScript(true);
+        server.add('/vendor.js', bundle);
+        fullReload = true;
+    }
+
+    if(fullReload) {
+        await chrome.reload();
+    } else {
         await updateChrome(result, changed);
     }
 
@@ -119,6 +142,7 @@ const startDev = () => {
     });
 
     server.add('/vuel-support.js', fs.readFileSync( path.join(__dirname, 'src', 'web', 'vuel-support.js')) );
+    server.addCallback('/index.html', renderIndex);
     server.start();
     requestUpdate();
 }

@@ -1,8 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 
-const VendorBundler = require('./VendorBundler');
-const SourceBundler = require('./SourceBundler');
 
 const log = require('./log');
 const prepareIndex = require('./prepare-index');
@@ -11,51 +9,32 @@ const server = require('./server');
 const sourceMap = require('./source-map');
 
 let prevIndex = null;
-const sourceBundler = new SourceBundler();
-const vendorBundler = new VendorBundler();
 
-const getHotReloadSource = () => {
-    return fs.readFileSync( path.join(
-        __dirname,
-        '..',
-        'node_modules',
-        'vue-hot-reload-api',
-        'dist',
-        'index.js',
-    )).toString();
-}
-
-module.exports = async({ isDev, filesChanged }) => {
+module.exports = async({ filesChanged, sourceBundler, vendorBundler }) => {
     try {
-        let root = 'src/index.js';
-        if(filesChanged.length>0) {
-            const sourceFilesChanged = filesChanged.filter(f => f.indexOf('src') === 0);
-            if(sourceFilesChanged.length === 0) { return {}; }
-            if(filesChanged.length === 1) {
-                root = filesChanged[0];
-            }
-        }
-
         const changes = {
             sourceBundler,
             vendorBundler,
         };
 
-        const result = await rebuildSource(root, sourceBundler, vendorBundler);
-        let { scripts, styles } = result;
-        let source = scripts.map(e => e.code).join('');
-        if(root === 'src/index.js') {
-            source += `vuelImport('src/index.js');`;
+        if(filesChanged.length === 0) {
+            filesChanged = [ 'src/index.js' ];
         }
 
-        const map = sourceMap.create(scripts);
-        source += sourceMap.sourceMappingURL(map);
-        changes.source = source;
-        changes.styles = styles;
- 
-        if(!prevIndex || filesChanged.includes('src/index.html')) {
-            prevIndex = prepareIndex({ isDev, changes });
-            changes.index = prevIndex;
+        for(let i=0; i<filesChanged.length; i++) {
+            let root = filesChanged[i];
+            if(root.indexOf('src') !== 0) { continue; }
+
+            const result = await rebuildSource(root, sourceBundler, vendorBundler);
+            let { scripts, styles } = result;
+            let source = scripts.map(e => e.code).join('');
+            if(root === 'src/index.js') {
+                source += `vuelImport('src/index.js');`;
+            }
+            const map = sourceMap.create(scripts);
+            source += sourceMap.sourceMappingURL(map);
+            changes.source = source;
+            changes.styles = styles;
         }
         return changes;
     } catch(e) {

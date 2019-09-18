@@ -1,7 +1,11 @@
 module.exports = class SourceBundler {
     constructor() {
         this.map = {};
+        this.scripts = [];
+        this.styles = [];
+        this.index = null;
     }
+
     getMemory(name) {
         return this.map[name] || {};
     }
@@ -9,13 +13,21 @@ module.exports = class SourceBundler {
         this.map[name] = obj;
     }
 
-    addScript(name, str, reloadMethod) {
+    addScript(entry) {
+        this.scripts.push(entry);
     }
 
-    addStyle(name, str) {
+    addStyle(entry) {
+        this.styles.push(entry);
     }
 
-    addHtml(name, str) {
+    updateIndex(entry) {
+        this.indexUpdated = new Date();
+        this.index = entry;
+    }
+
+    indexChanged(lastUpdate) {
+        return this.indexUpdated > lastUpdate;
     }
 
     buildScript(sourceMap, rootRun) {

@@ -1,10 +1,10 @@
+const path = require('path');
+const fs = require('fs');
+
 const SvgHandler = require('./SvgHandler');
 const VueHandler = require('./VueHandler');
 const Handler = require('./Handler');
 const resolveEntry = require('./resolve-entry');
-
-const path = require('path');
-const fs = require('fs');
 
 const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
@@ -21,7 +21,6 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
     const vendors = new Set();
     const scripts = [];
     const styles = [];
-
 
     const todo = [ root ];
     while(todo.length) {
@@ -40,6 +39,8 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
         convertImports(entry, vendors, todo, vendorBundler);
         convertExports(entry);
         scripts.push(entry);
+
+        sourceBundler.addScript(entry);
     }
     return {
         scripts,

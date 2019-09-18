@@ -23,8 +23,13 @@ const start = async() => {
             res.setHeader('Content-Type', 'text/css');
         }
         url = url.replace(/%20/g, ' ');
-        if(url in map) {
-            return map[url];
+
+        let result = map[url];
+        if(result) {
+            if(typeof(result) === 'function') {
+                return result();
+            }
+            return result;
         }
 
         if(url.indexOf('/static') === 0) {
@@ -51,8 +56,12 @@ const stop = () => {
 const add = (path, content) => {
     map[path] = content;
 }
+const addCallback = (path, content) => {
+    map[path] = content;
+}
 module.exports = {
     start,
     stop,
     add,
+    addCallback,
 };
