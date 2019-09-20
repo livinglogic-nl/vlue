@@ -5,7 +5,8 @@ module.exports = ({ test, vuelStream, launchProject }) => {
             await vuelStream.waitForIdle();
 
             // run puppet test on change:
-            await project.add('.vuel-local.json', '{ "puppet": "hello-message" }');
+            
+            await project.add('vuel.local.js', `module.exports = { puppet: 'hello-message' }`);
 
             // assume the puppet test to pass
             await vuelStream.waitForOk();
@@ -62,7 +63,7 @@ module.exports = ({ test, vuelStream, launchProject }) => {
     test('Allows to mock web requests', async(t) => {
         await launchProject('basic', async(project) => {
             await vuelStream.waitForIdle();
-            await project.add('.vuel-local.json', '{ "puppet": "mock-web" }');
+            await project.add('vuel.local.js', `module.exports = { puppet: 'mock-web' }`);
             await vuelStream.waitForIdle();
         });
     });

@@ -116,7 +116,7 @@ const startDev = () => {
     const dirs = fs.readdirSync('.');
     watch('.', (e,file) => {
         log.trace('💾', file);
-        if(file === '.vuel-local.json') {
+        if(file === 'vuel.local.js') {
             localSettings.update();
         } else if(file === 'vuel.js') {
             vuelSettings.update();

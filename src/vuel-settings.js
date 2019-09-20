@@ -10,13 +10,12 @@ module.exports = {
             delete require.cache[ require.resolve(url) ];
             config = require(url);
         } catch(e) {
-            console.log(e);
             log.info('No vuel.js found');
             config = {};
         }
     },
 
     get resolve() {
-        return config.resolve;
+        return config.resolve | {};
     }
 };

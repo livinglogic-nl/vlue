@@ -18,10 +18,10 @@ module.exports = {
             get(obj,key) {
                 let callback = (obj[key] || map[key]).bind(obj);
                 return (...rest) => {
-                    return new Promise(ok => {
-                        setTimeout(async() => {
-                            await callback(...rest);
-                            ok();
+                    return new Promise(async(ok) => {
+                        const result = await callback(...rest);
+                        setTimeout(() => {
+                            ok(result);
                         },interval);
                     });
                 };
