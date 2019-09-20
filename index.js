@@ -6,6 +6,7 @@ const puppetTest = require('./src/puppet-test');
 const watch = require('./src/watch');
 const log = require('./src/log');
 const localSettings = require('./src/local-settings');
+const vuelSettings = require('./src/vuel-settings');
 const chrome = require('./src/chrome');
 const handleChanges = require('./src/handle-changes');
 const rebuild = require('./src/rebuild');
@@ -13,44 +14,32 @@ const server = require('./src/server');
 const path = require('path');
 const fs = require('fs');
 const debounce = require('debounce');
+const convertExports = require('./src/convert-exports');
 
 
 const SourceBundler = require('./src/SourceBundler');
 const VendorBundler = require('./src/VendorBundler');
 
+const getHotReloadSource = () => {
+    return fs.readFileSync( path.join(
+        __dirname,
+        'node_modules',
+        'vue-hot-reload-api',
+        'dist',
+        'index.js',
+    )).toString();
+}
+
 let isDev = !process.argv.includes('build');
 
 let filesChanged = [];
 
-const updateChrome = async(changes, filesChanged) => {
-    const updatePromise = chrome.waitForUpdate();
-    if(filesChanged.length === 0) {
-        chrome.reload();
-    } else {
-        if(changes.source || changes.styles) {
-            if(changes.source !== undefined) {
-                log.trace('rescript');
-                chrome.rescript(changes, filesChanged);
-            }
-            if(changes.styles) {
-                log.trace('restyle');
-                chrome.restyle(changes);
-            }
-        } else {
-            return;
-        }
-    }
-    await updatePromise;
-}
-
-const runPuppetTest = async(file) => {
-    let puppetFile = null;
-    if(file && file.indexOf('puppet') === 0) {
-        puppetFile = path.join(process.cwd(), file);
-    } else {
+const runPuppetTest = async(roots) => {
+    let puppetFile = roots.find(f => f.indexOf('puppet') === 0);
+    if(!puppetFile) {
         const { puppet } = localSettings;
         if(puppet) {
-            puppetFile = path.join(process.cwd(), 'puppet', puppet + '.spec.js');
+            puppetFile = path.join('puppet', puppet + '.spec.js');
             if(!fs.existsSync(puppetFile)) {
                 throw Error('Puppet script ' + puppetFile + ' does not exist');
             }
@@ -58,42 +47,36 @@ const runPuppetTest = async(file) => {
     }
 
     if(puppetFile) {
-        await puppetTest.runTests( [ puppetFile ] );
+        await puppetTest.runTests( [ path.join(process.cwd(), puppetFile) ] );
     }
 }
 
 const sourceBundler = new SourceBundler();
 const vendorBundler = new VendorBundler();
 
-
-let lastChanges;
-const renderIndex = () => {
-    return prepareIndex({ isDev, changes:lastChanges });
-}
-
 const update = async(lastUpdate) => {
-    const changed = filesChanged.concat();
+    const roots = filesChanged.concat();
     filesChanged = [];
-    const file = changed.length === 1 ? changed[0] : null;
 
     const result = await rebuild({
-        filesChanged: changed,
+        roots,
         sourceBundler,
         vendorBundler,
     });
-    lastChanges = result;
-
-    const { source, styles } = result;
-    if(source) { server.add('/index.js', source); }
-
-    let fullReload = false;
-    if(changed.includes('src/index.html')) {
-        console.log('index changed!');
+    let fullReload = lastUpdate === null;
+    if(roots.includes('src/index.html')) {
         fullReload = true;
     }
 
     if(vendorBundler.changed()) {
-        const bundle = vendorBundler.buildScript(true);
+        let bundle = vendorBundler.fullScript;
+        const hotReload = {
+            name: 'vue-hot-reload-api',
+            code: getHotReloadSource(),
+        };
+        convertExports(hotReload);
+        bundle += hotReload.code;
+
         server.add('/vendor.js', bundle);
         fullReload = true;
     }
@@ -101,10 +84,9 @@ const update = async(lastUpdate) => {
     if(fullReload) {
         await chrome.reload();
     } else {
-        await updateChrome(result, changed);
+        await chrome.hot(sourceBundler);
     }
-
-    await runPuppetTest(file);
+    await runPuppetTest(roots);
     log.info('idle');
 }
 
@@ -136,34 +118,43 @@ const startDev = () => {
         log.trace('💾', file);
         if(file === '.vuel-local.json') {
             localSettings.update();
+        } else if(file === 'vuel.js') {
+            vuelSettings.update();
         }
         filesChanged.push(file);
         requestUpdate();
     });
 
-    server.add('/vuel-support.js', fs.readFileSync( path.join(__dirname, 'src', 'web', 'vuel-support.js')) );
-    server.addCallback('/index.html', renderIndex);
+    server.addCallback('/index.html', () => {
+        return prepareIndex({ isDev, sourceBundler, vendorBundler });
+    });
+    server.addCallback('/index.js', () => {
+        return sourceBundler.fullScript;
+    });
     server.start();
     requestUpdate();
 }
 
 const startBuild = async() => {
     const result = await rebuild({
-        isDev: false,
-        filesChanged:[],
+        roots:[],
+        sourceBundler,
+        vendorBundler,
     });
-    let { index, source, vendor, styles } = result;
-    let style = styles.map(s => s.code).join('');
+
+    let script = sourceBundler.fullScript;
+    const vendor = vendorBundler.fullScript;
+    const style = sourceBundler.fullStyle;
+    const index = prepareIndex({ isDev, sourceBundler, vendorBundler });
 
     // minify source
-
-    source = terser.minify(source).code;
+    script = terser.minify(script).code;
 
     // minify style
 
     await Promise.all([
         fsPromises.writeFile('dist/index.html', index),
-        fsPromises.writeFile('dist/index.js', source),
+        fsPromises.writeFile('dist/index.js', script),
         fsPromises.writeFile('dist/vendor.js', vendor),
         fsPromises.writeFile('dist/style.css', style),
     ]);
@@ -178,6 +169,7 @@ const start = async() => {
         log.error(reason.stack || reason);
     });
     localSettings.update();
+    vuelSettings.update();
 
     if(process.argv.includes('build')) {
         startBuild();

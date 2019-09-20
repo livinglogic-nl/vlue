@@ -101,30 +101,58 @@ module.exports = {
         handleWaiting();
     },
 
-    async rescript(changes, filesChanged) {
+    async hot(sourceBundler) {
         const page = await getPage();
+        const scripts = sourceBundler.scripts;
 
-        //clear old instances
-        await page.evaluate((names) => {
-            names.forEach(name => {
-                delete vuelInstanced[name];
-            });
-        }, filesChanged);
-        await page.evaluate(changes.source);
+        if(scripts.length) {
+            //clear old instances
+            await page.evaluate((names) => {
+                names.forEach(name => {
+                    delete vuelInstanced[name];
+                });
+            }, scripts.map(entry => entry.name));
 
-        const name = filesChanged[0];
-        const isVueComponent = filesChanged.length === 1 && name.includes('.vue');
-        console.log(name, isVueComponent);
-        if(isVueComponent) {
-            await page.evaluate((name) => {
-                console.log('reloading', name);
-                const api = vuelImport('vue-hot-reload-api');
-                api.reload(name, vuelImport(name));
-            },name);
-        } else {
-            await page.evaluate(() => {
-                vuelImport('src/index.js');
-            });
+            const script = sourceBundler.partialScript;
+            await page.evaluate(script);
+
+            const mustRunRoot = scripts.find(entry => entry.updateMethod === undefined);
+            if(mustRunRoot) {
+                log.trace('cold reload');
+                await page.evaluate(() => {
+                    vuelImport('src/index.js');
+                });
+            } else {
+                log.trace('hot reload');
+                await Promise.all(scripts.map(async(entry) => {
+                    return page.evaluate((name, updateMethod) => {
+                        const api = vuelImport('vue-hot-reload-api');
+                        if(updateMethod === 'vue.rerender') {
+                            api.rerender(name, vuelImport(name));
+                        } else {
+                            api.reload(name, vuelImport(name));
+                        }
+                    }, entry.name, entry.updateMethod);
+                }));
+            }
+        }
+        const styles = sourceBundler.styles;
+        if(styles.length) {
+            await Promise.all(
+                styles.map(s => page.evaluate(({name,str}) => {
+                    var a = document.querySelector('style[data-name="'+name+'"]');
+                    var b = document.createElement('style');
+                    b.dataset.name = name;
+                    b.innerHTML = str;
+                    if(a) {
+                        document.head.insertBefore(b,a);
+                        document.head.removeChild(a);
+                        console.log('style replaced');
+                    } else {
+                        document.head.appendChild(b);
+                    }
+                }, s))
+            );
         }
         handleWaiting();
     },

@@ -7,6 +7,6 @@ module.exports = class Handler {
         return changed;
     }
 
-    process(entry, styles, sourceBundler) {
+    process(entry, sourceBundler) {
     }
 }

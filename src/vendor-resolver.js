@@ -1,6 +1,8 @@
 const log = require('./log');
 const path = require('path');
 const fs = require('fs');
+const vuelSettings = require('./vuel-settings');
+
 
 const filters = [
     // (file) => file.includes('.common'),
@@ -12,6 +14,10 @@ const filters = [
 ];
 
 module.exports = (vendor) => {
+    const map = vuelSettings.resolve;
+    if(map[vendor]) {
+        return map[vendor];
+    }
     let files;
     let subdir = 'dist' + path.sep;
 

@@ -3,16 +3,7 @@ const fs = require('fs');
 const NotFoundError = require('./not-found-error');
 
 
-module.exports = ({ isDev, changes }) => {
-    let cacheBust;
-    if(isDev) {
-        cacheBust = (filename) => filename;
-    } else {
-        cacheBust = (filename, source) => {
-            const hash = crypto.createHash('md5').update(source).digest('hex');
-            return filename + '?'+hash;
-        }
-    }
+module.exports = ({ isDev, sourceBundler, vendorBundler }) => {
 
     let html;
     const file = 'src/index.html';
@@ -23,19 +14,19 @@ module.exports = ({ isDev, changes }) => {
     }
 
     if(isDev) {
-        const styles = changes.styles.map(s => {
-            return `<style data-name="${s.name}">\n${s.str}</style>`;
+        const styles = Object.values(sourceBundler.styleMap).map(s => {
+            return `<style data-name="${s.name}">\n${s.code}</style>`;
         }).join('');
         html = html.replace('</head>', styles + '</head>');
     } else {
-        const link = `<link rel="stylesheet" href="${cacheBust('style.css', changes.style)}" data-name="vuel" />\n`;
+        const link = `<link rel="stylesheet" href="styles.css?${sourceBundler.styleHash}" data-name="vuel" />\n`;
         html = html.replace('</head>', link + '</head>');
     }
 
+
     const scriptFiles = [
-        'vuel-support.js',
-        cacheBust('vendor.js', changes.vendor),
-        cacheBust('index.js', changes.source),
+        'vendor.js?' + vendorBundler.scriptHash,
+        'index.js?' + sourceBundler.scriptHash,
     ];
 
     html = html.replace(

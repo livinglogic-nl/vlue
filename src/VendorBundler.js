@@ -1,50 +1,50 @@
+const crypto = require('crypto');
 const log = require('./log');
 const vendorResolver = require('./vendor-resolver');
 const path = require('path');
 const fs = require('fs');
 const convertExports = require('./convert-exports');
 
-const getHotReloadSource = () => {
-    return fs.readFileSync( path.join(
-        __dirname,
-        '..',
-        'node_modules',
-        'vue-hot-reload-api',
-        'dist',
-        'index.js',
-    )).toString();
-}
 const replaceEnvs = (str) => {
     return str.replace(/process\.env\.[A-z]+/g, (all, key) => process.env[key]);
 }
 
 module.exports = class VendorBundler {
     constructor() {
-        this.lastSize = -1;
         this.vendors = new Set;
+        this.dirty = true;
     }
     add(vendor) {
-        this.vendors.add(vendor);
-    }
-
-    resolve() {
+        const { vendors } = this;
+        const lastSize = vendors.size;
+        vendors.add(vendor);
+        if(vendors.size > lastSize) {
+            this.dirty = true;
+        }
     }
 
     changed() {
-        return (this.lastSize !== this.vendors.size);
+        return this.dirty;
+    }
+    get fullScript() {
+        if(this.dirty) {
+            this._fullScript = this.buildScript();
+            this.dirty = false;
+        }
+        return this._fullScript;
     }
 
-    buildScript(supportBundle) {
-        this.lastSize = this.vendors.size;
-        // let script = rebuildVendor(this.vendors);
-        let script = '';
+    get scriptHash() {
+        return crypto.createHash('md5').update(this.fullScript).digest('hex');
+    }
+
+    buildScript() {
+        let script = fs.readFileSync(path.join(__dirname, 'web', 'vuel-support.js'));
         this.vendors.forEach(name => {
             const dir = path.join('node_modules', name);
             if(!fs.existsSync(dir)) {
                 throw Error(dir + ' required but does not exist');
             }
-
-
             const vendorLocalFile = vendorResolver(name);
             const url = 'node_modules/'+name+'/'+vendorLocalFile;
             log.trace(name, 'resolved to', vendorLocalFile, '('+ fs.statSync(url).size+')');
@@ -57,12 +57,6 @@ module.exports = class VendorBundler {
             convertExports(entry);
             script += entry.code;
         });
-        const hotReload = {
-            name: 'vue-hot-reload-api',
-            code: getHotReloadSource(),
-        };
-        convertExports(hotReload);
-        script += hotReload.code;
         return script;
     }
 }

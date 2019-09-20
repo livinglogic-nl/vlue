@@ -45,7 +45,25 @@ module.exports = class PageExtension {
 
     async route(path = '') {
         const url = 'http://localhost:8080' + '/#/' + path;
-        return this.goto(url);
+        await this.goto(url);
+
+        await this.evaluate(() => {
+            return new Promise(ok => {
+                const app = document.querySelector('#app').__vue__;
+                try {
+                    app.resetState();
+                } catch(e) {
+                    try {
+                        app.$children[0].resetState();
+                    } catch(e) {
+                        console.log(e);
+                        console.warn('No resetState method found on #app __vue__');
+                    }
+                }
+                window.scrollTo(0,0);
+                requestAnimationFrame(ok);
+            });
+        });
     }
 
 

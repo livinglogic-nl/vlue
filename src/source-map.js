@@ -50,7 +50,7 @@ const create = (entries) => {
             map: {
                 version:3,
                 file:'index.js',
-                sources: [ entry.path ],
+                sources: [ entry.name ],
                 sourcesContent: [ entry.source ],
                 mappings: getMappings(entry),
             }

@@ -22,9 +22,8 @@ const start = async() => {
         if(url.includes('.css')) {
             res.setHeader('Content-Type', 'text/css');
         }
-        url = url.replace(/%20/g, ' ');
-
-        let result = map[url];
+        const p = url.split('?')[0];
+        let result = map[p];
         if(result) {
             if(typeof(result) === 'function') {
                 return result();
@@ -32,8 +31,9 @@ const start = async() => {
             return result;
         }
 
-        if(url.indexOf('/static') === 0) {
+        if(p.indexOf('/static') === 0) {
             try {
+                url = url.replace(/%20/g, ' ');
                 const cnt = fs.readFileSync('static/'+url.substr(8));
                 return cnt;
             } catch(e) {

@@ -34,7 +34,7 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
         if(!handler.detectChanges(entry, sourceBundler)) {
             continue;
         }
-        handler.process(entry, styles, sourceBundler);
+        handler.process(entry, sourceBundler);
 
         convertImports(entry, vendors, todo, vendorBundler);
         convertExports(entry);

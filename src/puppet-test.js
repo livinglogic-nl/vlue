@@ -5,20 +5,26 @@ const chalk = require('chalk');
 const assert = require('assert');
 const chrome = require('./chrome');
 const puppetTestLogger = require('./puppet-test-logger');
+const localSettings = require('./local-settings');
 
 module.exports = {
     async runTests(urls) {
+        const interval = localSettings.puppetInterval;
+
         const page = await chrome.getPage();
-
-
         const map = new PageExtension(page);
         await map.init(page);
         const proxy = new Proxy(page, {
             get(obj,key) {
-                if(obj[key]) {
-                    return obj[key];
-                }
-                return map[key];
+                let callback = (obj[key] || map[key]).bind(obj);
+                return (...rest) => {
+                    return new Promise(ok => {
+                        setTimeout(async() => {
+                            await callback(...rest);
+                            ok();
+                        },interval);
+                    });
+                };
             },
         });
 

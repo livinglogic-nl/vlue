@@ -12,6 +12,10 @@ module.exports = {
         }
     },
 
+    get puppetInterval() {
+        return config.puppetInterval || 0;
+    },
+
     get puppet() {
         return config.puppet;
     },
