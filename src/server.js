@@ -34,8 +34,10 @@ const start = async() => {
         if(p.indexOf('/static') === 0) {
             try {
                 url = url.replace(/%20/g, ' ');
-                const cnt = fs.readFileSync('static/'+url.substr(8));
-                return cnt;
+                fs.readFile(url.substr(1), (e,cnt) => {
+                    micro.send(res, 200, cnt);
+                });
+                return;
             } catch(e) {
             }
         }

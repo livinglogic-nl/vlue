@@ -48,6 +48,7 @@ module.exports = class SourceBundler {
     }
 
     addStyle(entry) {
+        this.fullStyleDirty = true;
         this.styleMap[entry.name] = entry;
         this.styles.push(entry);
     }

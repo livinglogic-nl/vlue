@@ -19,7 +19,7 @@ module.exports = ({ isDev, sourceBundler, vendorBundler }) => {
         }).join('');
         html = html.replace('</head>', styles + '</head>');
     } else {
-        const link = `<link rel="stylesheet" href="styles.css?${sourceBundler.styleHash}" data-name="vuel" />\n`;
+        const link = `<link rel="stylesheet" href="style.css?${sourceBundler.styleHash}" data-name="vuel" />\n`;
         html = html.replace('</head>', link + '</head>');
     }
 

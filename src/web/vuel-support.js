@@ -5,7 +5,7 @@ var vuelImport = (name) => {
     if(!vuelInstanced[name]) {
         vuelInstanced[name] = vuelImports[name]();
 
-        if(name.includes('.vue')) {
+        if(process.env.NODE_ENV === 'development' && name.includes('.vue')) {
             if(!api) {
                 api = vuelImport('vue-hot-reload-api');
                 const Vue = vuelImport('vue');

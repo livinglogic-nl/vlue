@@ -106,17 +106,19 @@ module.exports = {
         const scripts = sourceBundler.scripts;
 
         if(scripts.length) {
+            const mustRunRoot = scripts.find(entry => entry.updateMethod === undefined);
+            const toClear = mustRunRoot ? Object.values(sourceBundler.scriptMap) : scripts;
+
             //clear old instances
             await page.evaluate((names) => {
                 names.forEach(name => {
                     delete vuelInstanced[name];
                 });
-            }, scripts.map(entry => entry.name));
+            }, toClear.map(entry => entry.name));
 
             const script = sourceBundler.partialScript;
             await page.evaluate(script);
 
-            const mustRunRoot = scripts.find(entry => entry.updateMethod === undefined);
             if(mustRunRoot) {
                 log.trace('cold reload');
                 await page.evaluate(() => {
@@ -139,14 +141,16 @@ module.exports = {
         const styles = sourceBundler.styles;
         if(styles.length) {
             await Promise.all(
-                styles.map(s => page.evaluate(({name,str}) => {
+                styles.map(s => page.evaluate(({name,code}) => {
+                    console.log('replacing',name);
                     var a = document.querySelector('style[data-name="'+name+'"]');
                     var b = document.createElement('style');
                     b.dataset.name = name;
-                    b.innerHTML = str;
+                    b.innerHTML = code;
                     if(a) {
-                        document.head.insertBefore(b,a);
-                        document.head.removeChild(a);
+                        const p = a.parentElement;
+                        p.insertBefore(b,a);
+                        p.removeChild(a);
                         console.log('style replaced');
                     } else {
                         document.head.appendChild(b);
@@ -154,27 +158,6 @@ module.exports = {
                 }, s))
             );
         }
-        handleWaiting();
-    },
-
-    async restyle(changes) {
-        const page = await getPage();
-        await Promise.all(
-            changes.styles.map(s => page.evaluate(({name,str}) => {
-                var a = document.querySelector('style[data-name="'+name+'"]');
-
-                var b = document.createElement('style');
-                b.dataset.name = name;
-                b.innerHTML = str;
-                if(a) {
-                    document.head.insertBefore(b,a);
-                    document.head.removeChild(a);
-                    console.log('replaced');
-                } else {
-                    document.head.appendChild(b);
-                }
-            }, s))
-        );
         handleWaiting();
     },
 

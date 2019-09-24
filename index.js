@@ -31,6 +31,7 @@ const getHotReloadSource = () => {
 }
 
 let isDev = !process.argv.includes('build');
+process.env.NODE_ENV = isDev ? 'development' : 'production';
 
 let filesChanged = [];
 
@@ -69,6 +70,7 @@ const update = async(lastUpdate) => {
     }
 
     if(vendorBundler.changed()) {
+        // TODO: add vue-hot-reload-api via vendorBundler.add
         let bundle = vendorBundler.fullScript;
         const hotReload = {
             name: 'vue-hot-reload-api',

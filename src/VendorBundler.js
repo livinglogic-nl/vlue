@@ -6,7 +6,9 @@ const fs = require('fs');
 const convertExports = require('./convert-exports');
 
 const replaceEnvs = (str) => {
-    return str.replace(/process\.env\.[A-z]+/g, (all, key) => process.env[key]);
+    return str.replace(/(global\.)?process\.env\.(\w+)/g, (all, global, key) => {
+        return "'" + process.env[key] +"'";
+    });
 }
 
 module.exports = class VendorBundler {
@@ -39,7 +41,8 @@ module.exports = class VendorBundler {
     }
 
     buildScript() {
-        let script = fs.readFileSync(path.join(__dirname, 'web', 'vuel-support.js'));
+        let script = fs.readFileSync(path.join(__dirname, 'web', 'vuel-support.js')).toString();
+        script = replaceEnvs(script);
         this.vendors.forEach(name => {
             const dir = path.join('node_modules', name);
             if(!fs.existsSync(dir)) {

@@ -1,3 +1,4 @@
+const log = require('./log');
 const path = require('path');
 const fs = require('fs');
 
@@ -11,11 +12,13 @@ const convertImports = require('./convert-imports');
 const splitVue = require('./split-vue');
 
 
+const defaultHandler = new Handler();
 const handlerMap = {
     vue: new VueHandler(),
     svg: new SvgHandler(),
+    js: defaultHandler,
 }
-const defaultHandler = new Handler();
+            // handler = defaultHandler;
 
 module.exports = async(root, sourceBundler, vendorBundler) => {
     const vendors = new Set();
@@ -28,7 +31,8 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
         let entry = resolveEntry(url);
         let handler = handlerMap[entry.ext];
         if(!handler) {
-            handler = defaultHandler;
+            log.trace('Cannot handle extension', entry.ext);
+            continue;
         }
 
         if(!handler.detectChanges(entry, sourceBundler)) {
