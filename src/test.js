@@ -53,7 +53,7 @@ const { launchProject } = require('../src/test-suite');
             tests = [ only ];
         }
 
-        const timeout = 3000;
+        const timeout = 300000;
         const test = blueTape.createHarness();
         test.createStream().pipe(process.stdout);
         for await(let obj of tests) {

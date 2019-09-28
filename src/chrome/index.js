@@ -1,11 +1,7 @@
-const log = require('./log');
-const localSettings = require('./local-settings');
-
-const child_process = require('child_process');
+const extendPage = require('./extend-page');
+const vuelSettings = require('./../vuel-settings');
 const puppeteer = require('puppeteer-core');
-const detect = require('detect-port');
-const devurl = 'http://localhost:8080';
-
+const log = require('./../log');
 
 let browser; 
 let pagePromise = null;
@@ -50,6 +46,7 @@ const waitForPort = async() => {
 
 
 const getPage = async() => {
+    const domain = vuelSettings.domain;
     if(!pagePromise) {
         pagePromise = new Promise(async(ok) => {
             await startup();
@@ -59,17 +56,19 @@ const getPage = async() => {
             for await(let p of pages) {
                 let url = p.url();
                 if(url.includes('chrome-devtools://')) { continue; }
-                if(url.includes(devurl)) {
+                if(url.includes(domain)) {
                     page = p;
                     break;
                 }
             }
             if(!page) {
                 page = await browser.newPage();
-                await page.goto(devurl);
+                await page.goto(domain);
             }
+
             await page.setCacheEnabled(false);
-            ok(page);
+            const result = await extendPage(page);
+            ok(result);
         });
     }
     return pagePromise;
@@ -122,6 +121,7 @@ module.exports = {
             if(mustRunRoot) {
                 log.trace('cold reload');
                 await page.evaluate(() => {
+                    delete vuelInstanced['vue-hot-reload-api'];
                     vuelImport('src/index.js');
                 });
             } else {
@@ -142,7 +142,7 @@ module.exports = {
         if(styles.length) {
             await Promise.all(
                 styles.map(s => page.evaluate(({name,code}) => {
-                    console.log('replacing',name);
+                    // console.log('replacing',name);
                     var a = document.querySelector('style[data-name="'+name+'"]');
                     var b = document.createElement('style');
                     b.dataset.name = name;
@@ -151,7 +151,6 @@ module.exports = {
                         const p = a.parentElement;
                         p.insertBefore(b,a);
                         p.removeChild(a);
-                        console.log('style replaced');
                     } else {
                         document.head.appendChild(b);
                     }

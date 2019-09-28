@@ -9,18 +9,24 @@ const detect = require('detect-port');
 let server;
 let map = {
 }
-const start = async() => {
+const start = async(port) => {
     log.info('starting server');
     server = micro(async (req, res) => {
         let { url } = req;
         if(url === '/') {
             url = '/index.html';
         }
+        if(url === '/favicon.ico') {
+            return fs.createReadStream(path.join(__dirname,'default-favicon.ico'));
+        }
         if(url.includes('.html')) {
             res.setHeader('Content-Type', 'text/html');
         }
         if(url.includes('.css')) {
             res.setHeader('Content-Type', 'text/css');
+        }
+        if(url.includes('.js')) {
+            res.setHeader('Content-Type', 'text/javascript');
         }
         const p = url.split('?')[0];
         let result = map[p];
@@ -34,9 +40,8 @@ const start = async() => {
         if(p.indexOf('/static') === 0) {
             try {
                 url = url.replace(/%20/g, ' ');
-                fs.readFile(url.substr(1), (e,cnt) => {
-                    micro.send(res, 200, cnt);
-                });
+                const stream = fs.createReadStream(url.substr(1));
+                micro.send(res, 200, stream);
                 return;
             } catch(e) {
             }
@@ -46,8 +51,8 @@ const start = async() => {
     server.on('error', (e) => {
         log.error('server error', e);
     });
-    server.listen(8080, () => {
-        log.info('server listening');
+    server.listen(port, () => {
+        log.info('server listening on port ' + port);
     });
 }
 

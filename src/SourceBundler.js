@@ -41,7 +41,9 @@ module.exports = class SourceBundler {
 
     buildScript(scripts, runIndex = false) {
         let source = scripts.map(e => e.code).join('');
-        source += `vuelImport('src/index.js');`;
+        if(runIndex) {
+            source += `vuelImport('src/index.js');`;
+        }
         const map = sourceMap.create(scripts);
         source += sourceMap.sourceMappingURL(map);
         return source;

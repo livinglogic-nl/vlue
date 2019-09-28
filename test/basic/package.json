@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "*",
     "vue": "*",
-    "vue-router": "*"
+    "vue-router": "*",
+    "vue-hot-reload-api": "*"
   }
 }

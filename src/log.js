@@ -4,6 +4,7 @@ const emoji = {
     trace: '🌊',
     info: '💬',
     error: '🔴',
+    warn: '⚠️',
     ok: '✅',
     fail: '❌',
 
@@ -26,6 +27,9 @@ module.exports = {
     },
     error(message, ...rest) {
         log('error', message, ...rest);
+    },
+    warn(message, ...rest) {
+        log('warn', message, ...rest);
     },
     trace(message, ...rest) {
         log('trace', message, ...rest);

@@ -16,6 +16,18 @@ module.exports = {
     },
 
     get resolve() {
-        return config.resolve | {};
-    }
+        return config.resolve || {};
+    },
+
+    get domain() {
+        return config.domain || 'http://localhost:' + this.port;
+    },
+
+    get port() {
+        return config.port || 8080;
+    },
+
+    get mockXHR() {
+        return config.mock.xhr | null;
+    },
 };

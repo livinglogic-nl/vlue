@@ -1,4 +1,3 @@
-const PageExtension = require('./page-extension');
 const log = require('./log');
 const blueTape = require('blue-tape');
 const chalk = require('chalk');
@@ -7,26 +6,15 @@ const chrome = require('./chrome');
 const puppetTestLogger = require('./puppet-test-logger');
 const localSettings = require('./local-settings');
 
+const { installMouseHelper, uninstallMouseHelper } = require('./chrome/install-mouse-helper');
+
 module.exports = {
     async runTests(urls) {
         const interval = localSettings.puppetInterval;
 
         const page = await chrome.getPage();
-        const map = new PageExtension(page);
-        await map.init(page);
-        const proxy = new Proxy(page, {
-            get(obj,key) {
-                let callback = (obj[key] || map[key]).bind(obj);
-                return (...rest) => {
-                    return new Promise(async(ok) => {
-                        const result = await callback(...rest);
-                        setTimeout(() => {
-                            ok(result);
-                        },interval);
-                    });
-                };
-            },
-        });
+        await installMouseHelper(page);
+        await page.setInterval(interval);
 
         const suites = [];
         global.describe = (name, handler) => {
@@ -52,12 +40,13 @@ module.exports = {
                     test(it.name, async(t) => {
                         await it.handler({
                             t,
-                            page: proxy,
+                            page,
                         });
                         ok();
                     });
                 });
             }
         }
+        await uninstallMouseHelper(page);
     }
 }

@@ -13,8 +13,8 @@ const rebuild = require('./src/rebuild');
 const server = require('./src/server');
 const path = require('path');
 const fs = require('fs');
-const debounce = require('debounce');
 const convertExports = require('./src/convert-exports');
+const updateXHR = require('./src/update-xhr');
 
 
 const SourceBundler = require('./src/SourceBundler');
@@ -30,7 +30,9 @@ const getHotReloadSource = () => {
     )).toString();
 }
 
-let isDev = !process.argv.includes('build');
+const projectModules = path.join(process.cwd(), 'node_modules');
+
+const isDev = !process.argv.includes('build');
 process.env.NODE_ENV = isDev ? 'development' : 'production';
 
 let filesChanged = [];
@@ -56,37 +58,55 @@ const sourceBundler = new SourceBundler();
 const vendorBundler = new VendorBundler();
 
 const update = async(lastUpdate) => {
+    let fullReload = lastUpdate === null;
+
     const roots = filesChanged.concat();
     filesChanged = [];
 
-    const result = await rebuild({
-        roots,
-        sourceBundler,
-        vendorBundler,
-    });
-    let fullReload = lastUpdate === null;
-    if(roots.includes('src/index.html')) {
-        fullReload = true;
+    const handleFile = (name, callback) => {
+        for(let i=0; i<roots.length; i++) {
+            if(roots[i].indexOf(name) === 0) {
+                roots.splice(i,1);
+                callback();
+            }
+        }
+    };
+
+    handleFile('src/index.html', () => { fullReload = true });
+    handleFile('vuel.js', () => { localSettings.update(); });
+    handleFile('vuel.local.js', () => { localSettings.update(); });
+    handleFile('mock/xhr', () => { updateXHR(); });
+
+    if(!lastUpdate || roots.length > 0) {
+        await rebuild({
+            roots,
+            sourceBundler,
+            vendorBundler,
+        });
+        if(vendorBundler.changed()) {
+            const lib = 'vue-hot-reload-api';
+            const libPath = path.join(projectModules, lib);
+            if(fs.existsSync(libPath)) {
+                vendorBundler.add(lib);
+            } else {
+                log.warn('npm install '+lib + ' to enable hot reloading');
+            }
+            server.add('/vendor.js', vendorBundler.fullScript);
+            fullReload = true;
+        }
     }
 
-    if(vendorBundler.changed()) {
-        // TODO: add vue-hot-reload-api via vendorBundler.add
-        let bundle = vendorBundler.fullScript;
-        const hotReload = {
-            name: 'vue-hot-reload-api',
-            code: getHotReloadSource(),
-        };
-        convertExports(hotReload);
-        bundle += hotReload.code;
-
-        server.add('/vendor.js', bundle);
-        fullReload = true;
+    if(!lastUpdate) {
+        await updateXHR();
     }
-
     if(fullReload) {
         await chrome.reload();
     } else {
-        await chrome.hot(sourceBundler);
+        if(sourceBundler.scripts.length || sourceBundler.styles.length) {
+            await chrome.hot(sourceBundler);
+        } else {
+            await chrome.reload();
+        }
     }
     await runPuppetTest(roots);
     log.info('idle');
@@ -117,12 +137,8 @@ const startDev = () => {
 
     const dirs = fs.readdirSync('.');
     watch('.', (e,file) => {
+        if(file.indexOf('.git') === 0) { return; }
         log.trace('💾', file);
-        if(file === 'vuel.local.js') {
-            localSettings.update();
-        } else if(file === 'vuel.js') {
-            vuelSettings.update();
-        }
         filesChanged.push(file);
         requestUpdate();
     });
@@ -133,7 +149,7 @@ const startDev = () => {
     server.addCallback('/index.js', () => {
         return sourceBundler.fullScript;
     });
-    server.start();
+    server.start(vuelSettings.port);
     requestUpdate();
 }
 
