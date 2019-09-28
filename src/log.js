@@ -7,6 +7,7 @@ const emoji = {
     warn: '⚠️',
     ok: '✅',
     fail: '❌',
+    tip: '🎉',
 
 }
 const log = (type, ...rest) => {
@@ -33,6 +34,9 @@ module.exports = {
     },
     trace(message, ...rest) {
         log('trace', message, ...rest);
+    },
+    tip(message, ...rest) {
+        log('tip', message, ...rest);
     },
     result(ok, message, ...rest) {
         log(ok ? 'ok' : 'fail', message, ...rest);

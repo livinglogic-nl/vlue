@@ -7,11 +7,10 @@ module.exports = {
     update() {
         try {
             const url = path.join(process.cwd(), 'vuel.local.js');
-            console.log(url);
             delete require.cache[ require.resolve(url) ];
             config = require(url);
         } catch(e) {
-            log.info('No vuel.local.js found');
+            log.tip('Adding a vuel.local.js allows for local setup');
             config = {};
         }
     },

@@ -10,7 +10,6 @@ let server;
 let map = {
 }
 const start = async(port) => {
-    log.info('starting server');
     server = micro(async (req, res) => {
         let { url } = req;
         if(url === '/') {

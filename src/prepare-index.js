@@ -1,3 +1,4 @@
+const log = require('./log');
 const crypto = require('crypto');
 const fs = require('fs');
 const NotFoundError = require('./not-found-error');
@@ -10,7 +11,8 @@ module.exports = ({ isDev, sourceBundler, vendorBundler }) => {
     try {
         html = fs.readFileSync(file).toString();
     } catch(e) {
-        throw new NotFoundError(file);
+        log.error('vuel relies on src/index.html');
+        return '';
     }
 
     if(isDev) {

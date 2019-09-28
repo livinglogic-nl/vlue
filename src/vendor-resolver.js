@@ -28,7 +28,6 @@ module.exports = (vendor) => {
     }
     try {
         files = fs.readdirSync(path.join('node_modules', vendor, 'dist'));
-        console.log(files);
     } catch(e) {
         subdir = '';
         files = fs.readdirSync(path.join('node_modules', vendor));

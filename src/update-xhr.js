@@ -9,9 +9,8 @@ module.exports = async() => {
 
     const xhrDir = path.join(process.cwd(), 'mock/xhr'); 
     const xhrIndex = path.join(xhrDir,'index.js');
-
     if(!fs.existsSync(xhrIndex)) {
-        log.info('no xhr mock found');
+        log.tip('You can mock XHR requests by adding mock/xhr/index.js');
         return;
     }
 

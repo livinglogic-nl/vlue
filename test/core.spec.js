@@ -1,13 +1,14 @@
 
 module.exports = ({ test, vuelStream, launchProject }) => {
-    test.only('Changing a source file causes an update', async(t) => {
+    test('Changing a source file causes an update', async(t) => {
         await launchProject('basic', async(project) => {
             await vuelStream.waitForIdle();
 
             // run puppet test on change:
+            await project.update('puppet/hello-message.spec.js', (str) => {
+                return str.replace(/[\s]it/, 'fit');
+            });
             
-            await project.add('vuel.local.js', `module.exports = { puppet: 'hello-message' }`);
-
             // assume the puppet test to pass
             await vuelStream.waitForOk();
 
@@ -26,13 +27,6 @@ module.exports = ({ test, vuelStream, launchProject }) => {
         });
     });
 
-    test('Changing a puppet file causes that file to be tested', async(t) => {
-        await launchProject('basic', async(project) => {
-            await vuelStream.waitForIdle();
-            await project.update('puppet/hello-message.spec.js', (str) => str);
-            await vuelStream.waitForOk();
-        });
-    });
 
     test('Helpful error for src/index.js', async(t) => {
         await launchProject('basic', async(project) => {
@@ -63,7 +57,9 @@ module.exports = ({ test, vuelStream, launchProject }) => {
     test('Allows to mock web requests', async(t) => {
         await launchProject('basic', async(project) => {
             await vuelStream.waitForIdle();
-            await project.add('vuel.local.js', `module.exports = { puppet: 'mock-web' }`);
+            await project.update('puppet/mock-web.spec.js', (str) => {
+                return str.replace(/[\s]it/, 'fit');
+            });
             await vuelStream.waitForIdle();
         });
     });

@@ -15,7 +15,6 @@ const { launchProject } = require('../src/test-suite');
 
 (async() => {
     const targetDir = '/tmp/vuel-test';
-    // child_process.execSync('rm -rf '+targetDir);
     if(!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir);
     }
@@ -42,7 +41,6 @@ const { launchProject } = require('../src/test-suite');
             only = ({name, callback});
         }
 
-
         require(url)({
             launchProject,
             vuelStream,
@@ -53,7 +51,7 @@ const { launchProject } = require('../src/test-suite');
             tests = [ only ];
         }
 
-        const timeout = 300000;
+        const timeout = 50000;
         const test = blueTape.createHarness();
         test.createStream().pipe(process.stdout);
         for await(let obj of tests) {

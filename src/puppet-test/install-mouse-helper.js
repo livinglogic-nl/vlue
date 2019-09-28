@@ -1,5 +1,9 @@
 async function installMouseHelper(page) {
+    console.log('installMouseHelper');
     await page.evaluateOnNewDocument(() => {
+        if(window.puppeteerMouseHelper) {
+            return;
+        }
         // Install mouse helper only for top-level frame.
         if (window !== window.parent)
             return;
@@ -76,6 +80,7 @@ async function installMouseHelper(page) {
     });
 };
 async function uninstallMouseHelper(page) {
+    console.log('uninstallMouseHelper');
     await page.evaluate(() => {
         if(window.puppeteerMouseHelper) {
             const {
@@ -85,7 +90,7 @@ async function uninstallMouseHelper(page) {
                 onDown,
                 onUp,
             } = window.puppeteerMouseHelper;
-            delete window.puppeteerMouseHelper;
+            window.puppeteerMouseHelper = null;
             document.head.removeChild(styleElement);
             document.body.removeChild(box);
             document.removeEventListener('mousemove', onMove);

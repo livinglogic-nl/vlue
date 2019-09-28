@@ -10,7 +10,7 @@ module.exports = {
             delete require.cache[ require.resolve(url) ];
             config = require(url);
         } catch(e) {
-            log.info('No vuel.js found');
+            log.tip('Adding a vuel.js allows for general setup');
             config = {};
         }
     },

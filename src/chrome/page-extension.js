@@ -1,3 +1,4 @@
+const log = require('./../log');
 const vuelSettings = require('./../vuel-settings');
 const pathToRegexp = require('path-to-regexp');
 const header = (name, value) => ({name,value});
@@ -6,7 +7,6 @@ module.exports = class PageExtension {
     async init(page) {
         let xhrStack = [];
         let xhrPointer = 0;
-
         this.xhr = {
             clear() {
                 xhrStack = [];
@@ -28,7 +28,7 @@ module.exports = class PageExtension {
 
         const client = await page.target().createCDPSession();
         await client.send('Fetch.enable');
-        client.on('Fetch.requestPaused', (obj) => {
+        client.on('Fetch.requestPaused', async(obj) => {
             const { requestId } = obj;
             const url = obj.request.url.replace(vuelSettings.domain, '');
             for(let i=xhrStack.length-1; i>=0; i--) {
@@ -61,7 +61,11 @@ module.exports = class PageExtension {
                     return;
                 }
             }
-            client.send('Fetch.continueRequest', { requestId });
+            try {
+                await client.send('Fetch.continueRequest', { requestId });
+            } catch(e) {
+                log.error('Could not continueRequest');
+            }
         });
     }
 
@@ -85,8 +89,24 @@ module.exports = class PageExtension {
     }
 
     async vclick(selector) {
-        await this.waitFor(selector);
-        await this.click(selector);
+        await this.evaluate((sel) => {
+            return new Promise(ok => {
+                const go = () => {
+                    const result = document.querySelector(sel);
+                    if(result) {
+                        requestAnimationFrame(() => {
+                            result.click();
+                            ok();
+                        });
+
+                    } else {
+                        console.log('failed...');
+                        setTimeout(go, 40);
+                    }
+                }
+                go();
+            });
+        },selector);
     }
 
     async vwait(selector) {

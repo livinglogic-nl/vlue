@@ -1,58 +1,28 @@
 #!/usr/bin/env node
+const path = require('path');
+const fs = require('fs');
 const terser = require('terser');
+
 const prepareIndex = require('./src/prepare-index');
 const fsPromises = require('fs').promises;
 const puppetTest = require('./src/puppet-test');
 const watch = require('./src/watch');
 const log = require('./src/log');
-const localSettings = require('./src/local-settings');
 const vuelSettings = require('./src/vuel-settings');
+const localSettings = require('./src/local-settings');
 const chrome = require('./src/chrome');
-const handleChanges = require('./src/handle-changes');
+
 const rebuild = require('./src/rebuild');
 const server = require('./src/server');
-const path = require('path');
-const fs = require('fs');
 const convertExports = require('./src/convert-exports');
 const updateXHR = require('./src/update-xhr');
-
-
 const SourceBundler = require('./src/SourceBundler');
 const VendorBundler = require('./src/VendorBundler');
-
-const getHotReloadSource = () => {
-    return fs.readFileSync( path.join(
-        __dirname,
-        'node_modules',
-        'vue-hot-reload-api',
-        'dist',
-        'index.js',
-    )).toString();
-}
-
-const projectModules = path.join(process.cwd(), 'node_modules');
 
 const isDev = !process.argv.includes('build');
 process.env.NODE_ENV = isDev ? 'development' : 'production';
 
 let filesChanged = [];
-
-const runPuppetTest = async(roots) => {
-    let puppetFile = roots.find(f => f.indexOf('puppet') === 0);
-    if(!puppetFile) {
-        const { puppet } = localSettings;
-        if(puppet) {
-            puppetFile = path.join('puppet', puppet + '.spec.js');
-            if(!fs.existsSync(puppetFile)) {
-                throw Error('Puppet script ' + puppetFile + ' does not exist');
-            }
-        }
-    }
-
-    if(puppetFile) {
-        await puppetTest.runTests( [ path.join(process.cwd(), puppetFile) ] );
-    }
-}
 
 const sourceBundler = new SourceBundler();
 const vendorBundler = new VendorBundler();
@@ -73,7 +43,7 @@ const update = async(lastUpdate) => {
     };
 
     handleFile('src/index.html', () => { fullReload = true });
-    handleFile('vuel.js', () => { localSettings.update(); });
+    handleFile('vuel.js', () => { vuelSettings.update(); });
     handleFile('vuel.local.js', () => { localSettings.update(); });
     handleFile('mock/xhr', () => { updateXHR(); });
 
@@ -85,11 +55,12 @@ const update = async(lastUpdate) => {
         });
         if(vendorBundler.changed()) {
             const lib = 'vue-hot-reload-api';
-            const libPath = path.join(projectModules, lib);
+            const libPath = path.join('node_modules', lib);
             if(fs.existsSync(libPath)) {
                 vendorBundler.add(lib);
             } else {
                 log.warn('npm install '+lib + ' to enable hot reloading');
+                return;
             }
             server.add('/vendor.js', vendorBundler.fullScript);
             fullReload = true;
@@ -108,11 +79,11 @@ const update = async(lastUpdate) => {
             await chrome.reload();
         }
     }
-    await runPuppetTest(roots);
+    await puppetTest.runDev(roots);
     log.info('idle');
 }
 
-const startDev = () => {
+const startDev = async() => {
     const elapsed = (date,ms) => {
         if(!date) return true;
         return (new Date() - date) > ms;
@@ -131,16 +102,20 @@ const startDev = () => {
         }
     },100);
 
-    const requestUpdate = () => {
-        lastUpdateRequest = new Date;
-    }
+    const requestUpdate = () => { lastUpdateRequest = new Date; }
 
     const dirs = fs.readdirSync('.');
     watch('.', (e,file) => {
-        if(file.indexOf('.git') === 0) { return; }
-        log.trace('💾', file);
-        filesChanged.push(file);
-        requestUpdate();
+        if(file.indexOf('.') === 0) { return; }
+        if(file.includes('/.')) { return; }
+        fs.lstat(file, (e, stats)=> {
+            if(!e && stats.isDirectory()) {
+                return;
+            }
+            log.trace(file, 'changed');
+            filesChanged.push(file);
+            requestUpdate();
+        });
     });
 
     server.addCallback('/index.html', () => {
@@ -150,6 +125,8 @@ const startDev = () => {
         return sourceBundler.fullScript;
     });
     server.start(vuelSettings.port);
+
+    await puppetTest.initDev();
     requestUpdate();
 }
 
@@ -186,8 +163,8 @@ const start = async() => {
     process.on('unhandledRejection', (reason) => {
         log.error(reason.stack || reason);
     });
-    localSettings.update();
     vuelSettings.update();
+    localSettings.update();
 
     if(process.argv.includes('build')) {
         startBuild();

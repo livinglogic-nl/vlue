@@ -1,5 +1,4 @@
 const log = require('./log');
-const eventBus = require('./event-bus');
 const child_process = require('child_process');
 const copyRecursive = require('./copy-recursive');
 const fs = require('fs');
