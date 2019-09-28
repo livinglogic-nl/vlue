@@ -1,4 +1,6 @@
-const sass = require('node-sass');
+const convertExports = require('./convert-exports');
+const convertImports = require('./convert-imports');
+const Entry = require('./Entry');
 const Handler = require('./Handler');
 
 const tagContents = (entry, tag) => {
@@ -12,7 +14,7 @@ const tagContents = (entry, tag) => {
 }
 
 module.exports = class VueHandler extends Handler {
-    detectChanges(entry, sourceBundler, vendorBundler) {
+    detectChanges(entry, todo, sourceBundler, vendorBundler) {
         const template = tagContents(entry, 'template');
         const script = tagContents(entry, 'script');
         const style = tagContents(entry, 'style');
@@ -28,14 +30,7 @@ module.exports = class VueHandler extends Handler {
 
         if(obj.style !== style) {
             if(style) {
-                // TODO: maybe delay sass rendering?
-                const result = sass.renderSync({
-                    data: style,
-                });
-                sourceBundler.addStyle({
-                    name: entry.name + '.css',
-                    code: result.css.toString(),
-                });
+                todo.push(new Entry(entry.url+'.scss', style));
             }
         }
 
@@ -46,7 +41,8 @@ module.exports = class VueHandler extends Handler {
         });
         return entry.updateMethod !== undefined;
     }
-    process(entry, sourceBundler) {
+
+    process(entry, todo, sourceBundler, vendorBundler) {
         // TODO: maybe use memoryMap?
         let [ script, rest ] = entry.code.split('</script>');
         script = script.replace('<script>\n', '');
@@ -57,5 +53,9 @@ module.exports = class VueHandler extends Handler {
             script = script.replace('export default {', 'export default { template,');
         }
         entry.code = script;
+
+        convertImports(entry, todo, vendorBundler);
+        convertExports(entry);
+        sourceBundler.addScript(entry);
     }
 };

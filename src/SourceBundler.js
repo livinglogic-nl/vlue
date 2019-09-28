@@ -14,15 +14,15 @@ module.exports = class SourceBundler {
     }
 
     getMemory(entry) {
-        return this.memoryMap[entry.name] || {};
+        return this.memoryMap[entry.url] || {};
     }
     setMemory(entry, obj) {
-        this.memoryMap[entry.name] = obj;
+        this.memoryMap[entry.url] = obj;
     }
 
     addScript(entry) {
         this.fullScriptDirty = true;
-        this.scriptMap[entry.name] = entry;
+        this.scriptMap[entry.url] = entry;
         this.scripts.push(entry);
     }
 
@@ -51,7 +51,7 @@ module.exports = class SourceBundler {
 
     addStyle(entry) {
         this.fullStyleDirty = true;
-        this.styleMap[entry.name] = entry;
+        this.styleMap[entry.url] = entry;
         this.styles.push(entry);
     }
 

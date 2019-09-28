@@ -17,7 +17,7 @@ module.exports = ({ isDev, sourceBundler, vendorBundler }) => {
 
     if(isDev) {
         const styles = Object.values(sourceBundler.styleMap).map(s => {
-            return `<style data-name="${s.name}">\n${s.code}</style>`;
+            return `<style data-name="${s.url}">\n${s.code}</style>`;
         }).join('');
         html = html.replace('</head>', styles + '</head>');
     } else {

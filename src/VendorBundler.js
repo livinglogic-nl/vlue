@@ -1,3 +1,4 @@
+const Entry = require('./Entry');
 const crypto = require('crypto');
 const log = require('./log');
 const vendorResolver = require('./vendor-resolver');
@@ -51,11 +52,8 @@ module.exports = class VendorBundler {
             const vendorLocalFile = vendorResolver(name);
             const url = 'node_modules/'+name+'/'+vendorLocalFile;
             log.trace(name, 'resolved to', vendorLocalFile, '('+ fs.statSync(url).size+')');
-            const entry = {
-                name,
-                url,
-                code: fs.readFileSync(url).toString(),
-            };
+
+            const entry = new Entry(url, null, name);
             entry.code = replaceEnvs(entry.code);
             convertExports(entry);
             script += entry.code;

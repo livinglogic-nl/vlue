@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const finishUrl = require('./finish-url');
 
-module.exports = (entry, vendors, todo, vendorBundler) => {
+module.exports = (entry, todo, vendorBundler) => {
     entry.code = entry.code.replace(/^import (.+?)?( from )?'(.+?)';?/gm, (all, ...rest) => {
         let as = null, from = null;
         if(rest.length === 5) {
@@ -15,7 +15,6 @@ module.exports = (entry, vendors, todo, vendorBundler) => {
 
         let url = from;
         if(url.indexOf('/') === -1) {
-            vendors.add(from);
             vendorBundler.add(from);
         } else {
             url = finishUrl(url, entry.url);

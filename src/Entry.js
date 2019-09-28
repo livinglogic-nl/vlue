@@ -2,15 +2,15 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = class Entry {
-    constructor(url) {
+    constructor(url, code = null, name = url) {
         this.url = url;
+        this.name = name;
         this.ext = path.extname(url).substr(1);
-        const code = fs.readFileSync(url).toString().trim();
+
+        if(code === null) {
+            code = fs.readFileSync(url).toString().trim();
+        }
         this.source = code;
         this.code = code;
-    }
-
-    get name() {
-        return this.url;
     }
 }
