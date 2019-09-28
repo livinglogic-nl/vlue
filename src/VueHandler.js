@@ -1,7 +1,5 @@
 const sass = require('node-sass');
 const Handler = require('./Handler');
-const splitVue = require('./split-vue');
-
 
 const tagContents = (entry, tag) => {
     const re = new RegExp('<'+tag+'[^>]*>([\\s\\S]+)</'+tag+'>');

@@ -1,5 +1,5 @@
+const Entry = require('./Entry');
 const path = require('path');
-const resolveEntry = require('./resolve-entry');
 const fs = require('fs');
 
 const finishUrl = require('./finish-url');
@@ -21,7 +21,7 @@ module.exports = (entry, vendors, todo, vendorBundler) => {
             url = finishUrl(url, entry.url);
             const existing = todo.find(e => e.url === url);
             if(!existing) {
-                todo.push(resolveEntry(url));
+                todo.push(new Entry(url));
             }
         }
         if(as) {

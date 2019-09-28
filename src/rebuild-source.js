@@ -5,11 +5,10 @@ const fs = require('fs');
 const SvgHandler = require('./SvgHandler');
 const VueHandler = require('./VueHandler');
 const Handler = require('./Handler');
-const resolveEntry = require('./resolve-entry');
+const Entry = require('./Entry');
 
 const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
-const splitVue = require('./split-vue');
 
 
 const defaultHandler = new Handler();
@@ -18,14 +17,13 @@ const handlerMap = {
     svg: new SvgHandler(),
     js: defaultHandler,
 }
-            // handler = defaultHandler;
 
 module.exports = async(root, sourceBundler, vendorBundler) => {
     const vendors = new Set();
     const scripts = [];
     const styles = [];
 
-    const todo = [ resolveEntry(root) ];
+    const todo = [ new Entry(root) ];
     while(todo.length) {
         const entry = todo.shift();
         let handler = handlerMap[entry.ext];
