@@ -1,6 +1,6 @@
 
 module.exports = ({ test, vuelStream, launchProject }) => {
-    test('Changing a source file causes an update', async(t) => {
+    test.only('Changing a source file causes an update', async(t) => {
         await launchProject('basic', async(project) => {
             await vuelStream.waitForIdle();
 

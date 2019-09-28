@@ -28,8 +28,6 @@ module.exports = class VueHandler extends Handler {
             entry.updateMethod = 'vue.reload';
         }
 
-        //TODO: push script entry here instead?
-
         if(obj.style !== style) {
             if(style) {
                 // TODO: maybe delay sass rendering?

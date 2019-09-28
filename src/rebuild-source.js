@@ -25,10 +25,9 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
     const scripts = [];
     const styles = [];
 
-    const todo = [ root ];
+    const todo = [ resolveEntry(root) ];
     while(todo.length) {
-        const url = todo.shift();
-        let entry = resolveEntry(url);
+        const entry = todo.shift();
         let handler = handlerMap[entry.ext];
         if(!handler) {
             log.trace('Cannot handle extension', entry.ext);
