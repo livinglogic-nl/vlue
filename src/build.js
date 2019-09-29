@@ -1,3 +1,5 @@
+const babelify = require('./babelify');
+const path = require('path');
 const log = require('./log');
 const terser = require('terser');
 const prepareIndex = require('./prepare-index');
@@ -18,6 +20,7 @@ const emptyDirectory = (name) => {
     fs.mkdirSync(name);
 }
 
+
 module.exports = async() => {
     emptyDirectory('dist');
 
@@ -27,15 +30,17 @@ module.exports = async() => {
         vendorBundler,
     });
 
-    let script = sourceBundler.fullScript;
-    const vendor = vendorBundler.fullScript;
-    const style = sourceBundler.fullStyle;
-    const index = prepareIndex({ isDev: false, sourceBundler, vendorBundler });
+    let { script, vendor } = babelify(sourceBundler, vendorBundler);
+    vendor = vendorBundler.supportScript + vendor;
 
     // minify source
     script = terser.minify(script).code;
+    vendor = terser.minify(vendor).code;
 
-    // minify style
+    const style = sourceBundler.fullStyle;
+    // TODO: minify style
+
+    const index = prepareIndex({ isDev: false, sourceBundler, vendorScript:vendor });
 
     const fsPromises = fs.promises;
     await Promise.all([

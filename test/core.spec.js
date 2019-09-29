@@ -1,12 +1,15 @@
+const { runDev, runBuild } = require('./../src/test/run');
+const prepareProject = require('./../src/prepare-project');
 
-module.exports = ({ test, vuelStream, launchProject }) => {
-    test('Uses babel', async(t) => {
-        await launchProject('basic', async(project) => {
+module.exports = ({ test, vuelStream }) => {
+    test.only('Uses babel', async(t) => {
+        const project = await prepareProject('basic');
+        await runBuild(project, async(vuelStream) => {
         });
-
     });
     test('Changing a source file causes an update', async(t) => {
-        await launchProject('basic', async(project) => {
+        const project = await prepareProject('basic');
+        await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();
 
             // run puppet test on change:
@@ -28,13 +31,13 @@ module.exports = ({ test, vuelStream, launchProject }) => {
             // change back to make the puppet test pass again
             await project.update('src/views/Home.vue', (str) => str.replace(b,a));
             await vuelStream.waitForOk();
-
         });
+
     });
 
-
     test('Helpful error for src/index.js', async(t) => {
-        await launchProject('basic', async(project) => {
+        const project = await prepareProject('basic');
+        await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();
 
             const cnt = project.get('src/index.js');
@@ -47,7 +50,8 @@ module.exports = ({ test, vuelStream, launchProject }) => {
     });
 
     test('Helpful error for src/index.html', async(t) => {
-        await launchProject('basic', async(project) => {
+        const project = await prepareProject('basic');
+        await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();
 
             const cnt = project.get('src/index.html');
@@ -60,7 +64,8 @@ module.exports = ({ test, vuelStream, launchProject }) => {
     });
 
     test('Allows to mock web requests', async(t) => {
-        await launchProject('basic', async(project) => {
+        const project = await prepareProject('basic');
+        await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();
             await project.update('puppet/mock-web.spec.js', (str) => {
                 return str.replace(/[\s]it/, 'fit');

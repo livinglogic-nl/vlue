@@ -4,7 +4,7 @@ const copyRecursive = require('./copy-recursive');
 const fs = require('fs');
 const path = require('path');
 
-module.exports = async(name, callback) => {
+module.exports = async(name) => {
     const sourceDir = path.join('test', name) + '/';
     const targetDir = '/tmp/vuel-test';
 
@@ -24,7 +24,8 @@ module.exports = async(name, callback) => {
     child_process.execFileSync('yarn', [ 'install' ], { cwd, stdio:'inherit' });
 
     const url = (file) => path.join(targetDir, file);
-    await callback({
+
+    const result = {
         targetDir,
         update(file, handler) {
             const cnt = handler( fs.readFileSync(url(file)).toString() );
@@ -42,6 +43,7 @@ module.exports = async(name, callback) => {
         install(module) {
             child_process.execFileSync('yarn', [ 'add', module ], { cwd });
         }
-    });
+    }
+    return result;
 }
 

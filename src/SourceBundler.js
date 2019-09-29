@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const sourceMap = require('./source-map');
 
 module.exports = class SourceBundler {
@@ -63,13 +62,6 @@ module.exports = class SourceBundler {
             this.fullStyleDirty = false;
         }
         return this._fullStyle;
-    }
-
-    get scriptHash() {
-        return crypto.createHash('md5').update(this.fullScript).digest('hex');
-    }
-    get styleHash() {
-        return crypto.createHash('md5').update(this.fullStyle).digest('hex');
     }
 
 }

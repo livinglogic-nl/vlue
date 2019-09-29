@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.6.2",
     "@vue/component-compiler-utils": "^3.0.0",
     "acorn": "^6.2.1",
     "blue-tape": "^1.0.0",

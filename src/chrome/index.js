@@ -56,7 +56,7 @@ const getPage = async() => {
             for await(let p of pages) {
                 let url = p.url();
                 if(url.includes('chrome-devtools://')) { continue; }
-                if(url.includes(domain)) {
+                if(url.includes('chrome-error') || url.includes(domain)) {
                     page = p;
                     break;
                 }

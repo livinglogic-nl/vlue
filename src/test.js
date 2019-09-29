@@ -10,7 +10,6 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 const testDir = path.join(__dirname, '..', 'test');
-const launchProject = require('./launch-project');
 
 
 (async() => {
@@ -19,9 +18,6 @@ const launchProject = require('./launch-project');
         fs.mkdirSync(targetDir);
     }
 
-    const vuelIndex = __dirname + '/../index.js';
-    const ps = child_process.spawn('node', [ vuelIndex ], { cwd:targetDir, stdio: ['inherit', 'pipe', 'pipe'] });
-    const vuelStream = new VuelStream(ps);
 
     let files = fs.readdirSync(testDir).filter(f => f.includes('.spec.js'));
     const [,,specific] = process.argv;
@@ -42,8 +38,6 @@ const launchProject = require('./launch-project');
         }
 
         require(url)({
-            launchProject,
-            vuelStream,
             test: testProxy,
         });
 
@@ -72,7 +66,6 @@ const launchProject = require('./launch-project');
             clearTimeout(timeoutId);
         }
     }
-    ps.kill('SIGINT');
 })();
 
 

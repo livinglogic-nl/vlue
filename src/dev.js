@@ -15,13 +15,12 @@ const SourceBundler = require('./SourceBundler');
 const sourceBundler = new SourceBundler();
 const vendorBundler = new VendorBundler();
 
-let filesChanged = [];
+let filesChanged = new Set;
 const update = async(lastUpdate) => {
     let fullReload = lastUpdate === null;
 
-    const roots = filesChanged.concat();
-    filesChanged = [];
-
+    const roots = [...filesChanged];
+    filesChanged.clear();
     const handleFile = (name, callback) => {
         for(let i=0; i<roots.length; i++) {
             if(roots[i].indexOf(name) === 0) {
@@ -51,7 +50,10 @@ const update = async(lastUpdate) => {
                 log.warn('npm install '+lib + ' to enable hot reloading');
                 return;
             }
-            server.add('/vendor.js', vendorBundler.fullScript);
+            server.add('/vendor.js', [
+                vendorBundler.supportScript,
+                vendorBundler.fullScript
+            ].join('\n'));
             fullReload = true;
         }
     }
@@ -102,13 +104,13 @@ module.exports = async() => {
                 return;
             }
             log.trace(file, 'changed');
-            filesChanged.push(file);
+            filesChanged.add(file);
             requestUpdate();
         });
     });
 
     server.addCallback('/index.html', () => {
-        return prepareIndex({ isDev:true, sourceBundler, vendorBundler });
+        return prepareIndex({ isDev:true, sourceBundler, vendorScript:vendorBundler.fullScript });
     });
     server.addCallback('/index.js', () => {
         return sourceBundler.fullScript;

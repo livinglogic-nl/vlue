@@ -4,8 +4,11 @@ const fs = require('fs');
 const NotFoundError = require('./not-found-error');
 
 
-module.exports = ({ isDev, sourceBundler, vendorBundler }) => {
+const hash = (str) => {
+    return crypto.createHash('md5').update(str).digest('hex');
+}
 
+module.exports = ({ isDev, sourceBundler, vendorScript }) => {
     let html;
     const file = 'src/index.html';
     try {
@@ -21,14 +24,13 @@ module.exports = ({ isDev, sourceBundler, vendorBundler }) => {
         }).join('');
         html = html.replace('</head>', styles + '</head>');
     } else {
-        const link = `<link rel="stylesheet" href="style.css?${sourceBundler.styleHash}" data-name="vuel" />\n`;
+        const link = `<link rel="stylesheet" href="style.css?${hash(sourceBundler.fullStyle)}" data-name="vuel" />\n`;
         html = html.replace('</head>', link + '</head>');
     }
 
-
     const scriptFiles = [
-        'vendor.js?' + vendorBundler.scriptHash,
-        'index.js?' + sourceBundler.scriptHash,
+        'vendor.js?' + hash(vendorScript),
+        'index.js?' + hash(sourceBundler.fullScript),
     ];
 
     html = html.replace(
