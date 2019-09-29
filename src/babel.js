@@ -19,8 +19,10 @@ const replaceRequires = (str, todo, dir) => {
     });
 }
 
-module.exports = (sourceBundler, vendorBundler) => {
-    const babel = require(path.join(process.cwd(), 'node_modules', '@babel/core'));
+const coreBabelPath = path.join(process.cwd(), 'node_modules', '@babel/core');
+
+const babelify = (sourceBundler, vendorBundler) => {
+    const babel = require(coreBabelPath);
     const sentinel = '\n//SENTINEL//\n';
     let scripts = [
         vendorBundler.fullScript,
@@ -68,4 +70,10 @@ return module.exports;});
         script,
         vendor: added + vendor,
     };
+}
+
+const isSupported = () => fs.existsSync(coreBabelPath);
+module.exports = {
+    babelify,
+    isSupported,
 }

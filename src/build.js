@@ -1,4 +1,4 @@
-const babelify = require('./babelify');
+const babel = require('./babel');
 const path = require('path');
 const log = require('./log');
 const terser = require('terser');
@@ -30,7 +30,22 @@ module.exports = async() => {
         vendorBundler,
     });
 
-    let { script, vendor } = babelify(sourceBundler, vendorBundler);
+    let scripts;
+    if(babel.isSupported()) {
+        scripts = babel.babelify(sourceBundler, vendorBundler);
+    } else {
+        log.warn('No babel found, please:');
+        log.warn('1. npm install @babel/core @babel/preset-env core-js');
+        log.warn('2. make sure a babel.config.js is present in root of project');
+        log.warn('An example babel.config.js is at: https://babeljs.io/docs/en/usage');
+
+        scripts = {
+            script: sourceBundler.fullScript,
+            vendor: vendorBundler.fullScript,
+        }
+    }
+    let { script, vendor } = scripts;
+
     vendor = vendorBundler.supportScript + vendor;
 
     // minify source
