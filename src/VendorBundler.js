@@ -1,3 +1,4 @@
+const replaceEnvs = require('./replace-envs');
 const path = require('path');
 const fs = require('fs');
 
@@ -5,7 +6,6 @@ const Entry = require('./Entry');
 const log = require('./log');
 const convertExports = require('./convert-exports');
 const vendorResolver = require('./vendor-resolver');
-const replaceEnvs = require('./../../flep/back/src/replace-envs');
 
 module.exports = class VendorBundler {
     constructor() {
