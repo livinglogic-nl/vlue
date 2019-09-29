@@ -125,8 +125,8 @@ module.exports = {
                     vuelImport('src/index.js');
                 });
             } else {
-                log.trace('hot reload');
                 await Promise.all(scripts.map(async(entry) => {
+                    log.trace('hot reload', entry.url, entry.updateMethod);
                     return page.evaluate((name, updateMethod) => {
                         const api = vuelImport('vue-hot-reload-api');
                         if(updateMethod === 'vue.rerender') {

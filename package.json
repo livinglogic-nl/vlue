@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vue/component-compiler-utils": "^3.0.0",
     "acorn": "^6.2.1",
     "blue-tape": "^1.0.0",
     "chrome-location": "^1.2.1",

@@ -13,6 +13,7 @@
     "axios": "*",
     "vue": "*",
     "vue-router": "*",
-    "vue-hot-reload-api": "*"
+    "vue-hot-reload-api": "*",
+    "vue-template-compiler": "*"
   }
 }
