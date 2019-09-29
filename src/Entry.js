@@ -1,3 +1,4 @@
+const NotFoundError = require('./not-found-error');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,7 +9,11 @@ module.exports = class Entry {
         this.ext = path.extname(url).substr(1);
 
         if(code === null) {
-            code = fs.readFileSync(url).toString().trim();
+            try {
+                code = fs.readFileSync(url).toString().trim();
+            } catch(e) {
+                throw new NotFoundError(url);
+            }
         }
         this.source = code;
         this.code = code;

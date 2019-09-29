@@ -10,7 +10,7 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 const testDir = path.join(__dirname, '..', 'test');
-const { launchProject } = require('../src/test-suite');
+const launchProject = require('./launch-project');
 
 
 (async() => {

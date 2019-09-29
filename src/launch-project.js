@@ -4,7 +4,7 @@ const copyRecursive = require('./copy-recursive');
 const fs = require('fs');
 const path = require('path');
 
-const launchProject = async(name, callback) => {
+module.exports = async(name, callback) => {
     const sourceDir = path.join('test', name) + '/';
     const targetDir = '/tmp/vuel-test';
 
@@ -45,6 +45,3 @@ const launchProject = async(name, callback) => {
     });
 }
 
-module.exports = {
-    launchProject,
-};

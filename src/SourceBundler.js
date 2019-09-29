@@ -44,8 +44,8 @@ module.exports = class SourceBundler {
         if(runIndex) {
             source += `vuelImport('src/index.js');`;
         }
-        const map = sourceMap.create(scripts);
-        source += sourceMap.sourceMappingURL(map);
+        // const map = sourceMap.create(scripts);
+        // source += sourceMap.sourceMappingURL(map);
         return source;
     }
 
