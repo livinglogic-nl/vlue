@@ -9,6 +9,7 @@ const vuelSettings = require('./vuel-settings');
 const server = require('./server');
 const watch = require('./watch');
 const fs = require('fs');
+
 const VendorBundler = require('./VendorBundler');
 const SourceBundler = require('./SourceBundler');
 
@@ -117,6 +118,5 @@ module.exports = async() => {
     });
     server.start(vuelSettings.port);
 
-    await puppetTest.initDev();
     requestUpdate();
 }

@@ -11,7 +11,8 @@ const assert = require('assert');
 const { installMouseHelper, uninstallMouseHelper } = require('./install-mouse-helper');
 
 const puppetDir = 'puppet';
-const fitsMap = {};
+let fitsMap = null;
+
 module.exports = {
     async runTests(puppetFiles) {
         const interval = localSettings.puppetInterval;
@@ -60,19 +61,24 @@ module.exports = {
     },
 
     async initDev() {
+        if(!fs.existsSync(puppetDir)) { return false; }
+
+        fitsMap = {};
         const puppetFiles = fs.readdirSync(puppetDir);
         puppetFiles.forEach(file => {
             this.registerFits(path.join(puppetDir,file));
         });
-    },
-
-    async registerFits(file) {
-        const cnt = await fs.readFileSync(file).toString();
-        const matches = [...cnt.matchAll(/[\s](fit)\(/g)];
-        fitsMap[file] = matches.length;
+        return true;
     },
 
     async runDev(roots) {
+        if(!fitsMap) {
+            const ok = await this.initDev();
+            if(!ok) {
+                log.tip('Add puppet/*.spec.js files to have automated puppeteer testing');
+                return;
+            }
+        }
         const changedPuppets = roots.filter(f => f.indexOf(puppetDir) === 0);
         if(changedPuppets.length) {
             await Promise.all(changedPuppets.map(file => {
@@ -85,5 +91,12 @@ module.exports = {
         if(focused.length) {
             await this.runTests(focused);
         }
-    }
+    },
+
+    async registerFits(file) {
+        const cnt = await fs.readFileSync(file).toString();
+        const matches = [...cnt.matchAll(/[\s](fit)\(/g)];
+        fitsMap[file] = matches.length;
+    },
+
 }

@@ -8,7 +8,6 @@ const emoji = {
     ok: '✅',
     fail: '❌',
     tip: '🎉',
-
 }
 const log = (type, ...rest) => {
     const d = new Date();
@@ -21,6 +20,8 @@ const log = (type, ...rest) => {
 
     console.log(emoji[type], rest.join(' '));
 }
+
+const providedTips = new Set;
 module.exports = {
     emoji,
     info(message, ...rest) {
@@ -35,8 +36,10 @@ module.exports = {
     trace(message, ...rest) {
         log('trace', message, ...rest);
     },
-    tip(message, ...rest) {
-        log('tip', message, ...rest);
+    tip(message) {
+        if(providedTips.has(message)) { return; }
+        providedTips.add(message);
+        log('tip', message);
     },
     result(ok, message, ...rest) {
         log(ok ? 'ok' : 'fail', message, ...rest);
