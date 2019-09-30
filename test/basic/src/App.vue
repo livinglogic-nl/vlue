@@ -20,7 +20,7 @@ body {
     display: block;
     margin: 60px auto;
     text-align: center;
-    background: url('background.svg');
+    background: url('./background.svg');
 }
 
 #app {

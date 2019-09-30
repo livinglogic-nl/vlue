@@ -73,7 +73,7 @@ module.exports = class VueHandler {
         let { template, script, style } = sourceBundler.getMemory(entry);
         if(template) {
             template = template.replace(
-                / src=.([^"']+)./g,
+                / src=.(\.[^"']+)./g,
                 (all,url) => ` src="${sourceBundler.requestUrl(entry, url)}"`)
         }
 

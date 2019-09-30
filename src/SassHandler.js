@@ -9,7 +9,6 @@ module.exports = class SassHandler extends Handler {
     prepare(entry, sourceBundler, vendorBundler) {
         //TODO: should instead todoPush a CSS Entry
         //new Entry(entry.url + '.css', result.css.toString()));
-       
         let code = entry.code.replace(/@import "([^"]+)"/g, (all, file) => {
             let url = file;
             if(url.indexOf('.') !== 0) {
@@ -20,11 +19,12 @@ module.exports = class SassHandler extends Handler {
         });
 
         code = code.replace(
-                /url\(.?([^"']+).?\)/g,
+                /url\(.?(\.[^"']+).?\)/g,
                 (all,url) => `url(${sourceBundler.requestUrl(entry, url)})`)
         entry.code = code;
 
         const result = sass.renderSync({ data:code });
+        entry.code = result.css.toString();
         sourceBundler.addStyle(entry);
 
     }

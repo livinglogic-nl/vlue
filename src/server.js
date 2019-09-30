@@ -12,6 +12,8 @@ let map = {
 const start = async(port) => {
     server = micro(async (req, res) => {
         let { url } = req;
+        url = url.split('?')[0];
+        console.log(url);
         if(url === '/') {
             url = '/index.html';
         }
@@ -49,6 +51,7 @@ const start = async(port) => {
     })
     server.on('error', (e) => {
         log.error('server error', e);
+        process.exit();
     });
     server.listen(port, () => {
         log.info('server listening on port ' + port);
