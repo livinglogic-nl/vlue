@@ -27,11 +27,11 @@ const { killDev } = require('./test/run');
     if(specific) {
         files = [ specific + '.spec.js' ];
     }
+    let only = null;
     for await(let file of files) {
         console.log(chalk.blue(file));
 
         let tests = [];
-        let only = null;
         const url = require.resolve( path.join(testDir, file) );
         const testProxy = (name, callback) => {
             tests.push({ name, callback });
@@ -67,6 +67,9 @@ const { killDev } = require('./test/run');
                 log.error('Timeout of '+timeout+'ms passed');
             });
             clearTimeout(timeoutId);
+        }
+        if(only) {
+            break;
         }
     }
     killDev();

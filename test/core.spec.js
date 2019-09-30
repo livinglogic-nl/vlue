@@ -57,4 +57,16 @@ module.exports = ({ test, vuelStream }) => {
             await vuelStream.waitForOk();
         });
     });
+
+    test('Handles urls in style', async(t) => {
+        const project = await prepareProject('basic');
+        await runDev(project, async(vuelStream) => {
+            await vuelStream.waitForIdle();
+
+            await project.update('puppet/shows-background.spec.js', (str) => {
+                return str.replace(/[\s]it/, 'fit');
+            });
+            await vuelStream.waitForOk();
+        });
+    });
 }

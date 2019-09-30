@@ -86,7 +86,7 @@ module.exports = class SourceBundler {
     }
 
     resolveUrls(entry) {
-        entry.code = entry.code.replace(/vuel-url:([^'"]+)/g, (all, url) => {
+        entry.code = entry.code.replace(/vuel-url:([^\)'"]+)/g, (all, url) => {
             return this.scriptMap[url].uri;
         });
     }

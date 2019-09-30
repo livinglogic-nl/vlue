@@ -3,6 +3,9 @@ const vuelSettings = require('./../vuel-settings');
 const pathToRegexp = require('path-to-regexp');
 const header = (name, value) => ({name,value});
 
+const stream = require('stream');
+const pngAsync = require('png-async');
+
 module.exports = class PageExtension {
     async init(page) {
         let xhrStack = [];
@@ -150,5 +153,28 @@ return new Promise((ok,fail) => {
 `);
         return this.evaluate(func);
 
+    }
+
+    async vcolor(x,y) {
+        return new Promise(async(ok) => {
+            const shot = await this.screenshot({
+                clip: { x, y, width: 1, height: 1 },
+            });
+
+            const pass = new stream.PassThrough();
+            pass.end( shot );
+
+            const image = pngAsync.createImage({ filterType: 4 });
+            image.on('parsed', () => {
+                const [red, green, blue, alpha ] = image.data.slice(0,4);
+                ok({
+                    red,
+                    green,
+                    blue,
+                    alpha,
+                });
+            });
+            pass.pipe(image);
+        });
     }
 }
