@@ -41,8 +41,8 @@ const getCompiled = (template, filename) => {
     return compiled;
 }
 
-module.exports = class VueHandler extends Handler {
-    detectChanges(entry, todo, sourceBundler, vendorBundler) {
+module.exports = class VueHandler {
+    detectChange(entry, sourceBundler, vendorBundler) {
         const template = tagContents(entry, 'template');
         const script = tagContents(entry, 'script');
         const style = tagContents(entry, 'style');
@@ -57,20 +57,25 @@ module.exports = class VueHandler extends Handler {
 
         if(obj.style !== style) {
             if(style) {
-                todo.push(new Entry(entry.url+'.scss', style));
+                sourceBundler.addTodo(entry.url+'.scss', style);
             }
         }
-
         sourceBundler.setMemory(entry, {
             template,
             script,
             style,
         });
+
         return entry.updateMethod !== undefined;
     }
 
-    process(entry, todo, sourceBundler, vendorBundler) {
+    prepare(entry, sourceBundler, vendorBundler) {
         let { template, script, style } = sourceBundler.getMemory(entry);
+        if(template) {
+            template = template.replace(
+                / src=.([^"']+)./g,
+                (all,url) => ` src="${sourceBundler.requestUrl(entry, url)}"`)
+        }
 
         if(template !== null) {
             const compiled = getCompiled(template);
@@ -82,8 +87,12 @@ module.exports = class VueHandler extends Handler {
         }
         entry.code = script;
 
-        convertImports(entry, todo, vendorBundler);
+        convertImports(entry, sourceBundler, vendorBundler);
         convertExports(entry);
         sourceBundler.addScript(entry);
+    }
+
+    finish(entry, sourceBundler, vendorBundler) {
+        sourceBundler.resolveUrls(entry);
     }
 };

@@ -6,10 +6,7 @@ const Handler = require('./Handler');
 
 
 module.exports = class SassHandler extends Handler {
-    detectChanges(entry, todo, sourceBundler, vendorBundler) {
-        return true;
-    }
-    process(entry, todo, sourceBundler, vendorBundler) {
+    prepare(entry, sourceBundler, vendorBundler) {
         entry.code = entry.code.replace(/@import "([^"]+)"/g, (all, file) => {
             let url = file;
             if(url.indexOf('.') !== 0) {
@@ -28,6 +25,9 @@ module.exports = class SassHandler extends Handler {
         // });
         const result = sass.renderSync({ data: entry.code, });
         sourceBundler.addStyle(new Entry(entry.url + '.css', result.css.toString()));
+        return true;
+    }
+    finish(entry, sourceBundler, vendorBundler) {
     }
 }
 

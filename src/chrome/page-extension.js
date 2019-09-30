@@ -64,7 +64,7 @@ module.exports = class PageExtension {
             try {
                 await client.send('Fetch.continueRequest', { requestId });
             } catch(e) {
-                log.error('Could not continueRequest');
+                // sometimes it fails, but does not seem to matter much
             }
         });
     }

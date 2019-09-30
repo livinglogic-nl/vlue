@@ -18,6 +18,8 @@ body {
     word-spacing: 0.05em;
     color: #4f5959;
     display: block;
+    margin: 60px auto;
+    text-align: center;
 }
 
 </style>

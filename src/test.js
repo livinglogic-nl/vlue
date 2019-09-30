@@ -11,6 +11,9 @@ const path = require('path');
 const fs = require('fs');
 const testDir = path.join(__dirname, '..', 'test');
 
+const { killDev } = require('./test/run');
+
+
 
 (async() => {
     const targetDir = '/tmp/vuel-test';
@@ -45,7 +48,7 @@ const testDir = path.join(__dirname, '..', 'test');
             tests = [ only ];
         }
 
-        const timeout = 50000;
+        const timeout = 5000;
         const test = blueTape.createHarness();
         test.createStream().pipe(process.stdout);
         for await(let obj of tests) {
@@ -66,6 +69,7 @@ const testDir = path.join(__dirname, '..', 'test');
             clearTimeout(timeoutId);
         }
     }
+    killDev();
 })();
 
 

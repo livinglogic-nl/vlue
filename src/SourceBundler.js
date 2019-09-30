@@ -1,3 +1,6 @@
+const Entry = require('./Entry');
+const path = require('path');
+const resolve = require('./resolve');
 const sourceMap = require('./source-map');
 
 module.exports = class SourceBundler {
@@ -8,8 +11,19 @@ module.exports = class SourceBundler {
     }
 
     newSession() {
+        this.todo = [];
         this.scripts = [];
         this.styles = [];
+        this.requestedUrls = [];
+    }
+
+    addTodo(url, content = null, context = 'script') {
+        let entry = this.todo.find(e => e.url === url);
+        if(!entry) {
+            entry = new Entry(url, content);
+            this.todo.push(entry);
+        }
+        entry.contexts.push(context);
     }
 
     getMemory(entry) {
@@ -64,4 +78,16 @@ module.exports = class SourceBundler {
         return this._fullStyle;
     }
 
+
+    requestUrl(entry, url) {
+        const resolved = resolve(path.dirname(entry.url), url);
+        this.addTodo(resolved, null, 'nonscript');
+        return 'vuel-url:' + resolved;
+    }
+
+    resolveUrls(entry) {
+        entry.code = entry.code.replace(/vuel-url:([^'"]+)/g, (all, url) => {
+            return this.scriptMap[url].uri;
+        });
+    }
 }

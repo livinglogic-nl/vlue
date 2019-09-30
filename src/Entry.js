@@ -17,5 +17,6 @@ module.exports = class Entry {
         }
         this.source = code;
         this.code = code;
+        this.contexts = [];
     }
 }

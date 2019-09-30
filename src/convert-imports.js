@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const finishUrl = require('./finish-url');
 
-module.exports = (entry, todo, vendorBundler) => {
+module.exports = (entry, sourceBundler, vendorBundler) => {
     entry.code = entry.code.replace(/^import (.+?)?( from )?'(.+?)';?/gm, (all, ...rest) => {
         let as = null, from = null;
         if(rest.length === 5) {
@@ -18,10 +18,7 @@ module.exports = (entry, todo, vendorBundler) => {
             vendorBundler.add(from);
         } else {
             url = finishUrl(url, entry.url);
-            const existing = todo.find(e => e.url === url);
-            if(!existing) {
-                todo.push(new Entry(url));
-            }
+            sourceBundler.addTodo(url);
         }
         if(as) {
             return `const ${as} = vuelImport('${url}');`;

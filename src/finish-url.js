@@ -1,3 +1,4 @@
+//TODO: rename to resolve-script
 const path = require('path');
 const fs = require('fs');
 module.exports = (url, fromUrl) => {

@@ -1,12 +1,8 @@
+const resolve = require('./resolve');
 const log = require('./log');
 const fs = require('fs');
 const path = require('path');
-const resolve = (a,b) => {
-    let full = a + '/' + b;
-    full = full.replace(/\/\.\//g, '/');
-    full = full.replace(/[^\/]+\/\.\.\//g, '');
-    return full;
-}
+
 
 const replaceRequires = (str, todo, dir) => {
     return str.replace(/require\(.(.+).\)/g, (all, url) => {
