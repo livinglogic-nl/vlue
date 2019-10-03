@@ -6,6 +6,32 @@ const header = (name, value) => ({name,value});
 const stream = require('stream');
 const pngAsync = require('png-async');
 
+const vtry = async(page, callback, ...rest) => {
+        const maxRuns = 5;
+        const func = Function('rest', `
+return new Promise((ok,fail) => {
+    let runs = 0;
+    const maxRuns = ${maxRuns};
+    const callback = ${callback.toString()};
+    const run = async() => {
+        runs++;
+        try {
+            let result = await callback(...rest);
+            ok(result);
+        } catch(e) {
+            if(runs >= maxRuns) {
+                fail(e);
+            } else {
+                setTimeout(run, 40); 
+            }
+        }
+    }
+    run();
+});
+`);
+    return page.evaluate(func, rest);
+}
+
 module.exports = class PageExtension {
     async init(page) {
         let xhrStack = [];
@@ -92,24 +118,9 @@ module.exports = class PageExtension {
     }
 
     async vclick(selector) {
-        await this.evaluate((sel) => {
-            return new Promise(ok => {
-                const go = () => {
-                    const result = document.querySelector(sel);
-                    if(result) {
-                        requestAnimationFrame(() => {
-                            result.click();
-                            ok();
-                        });
-
-                    } else {
-                        console.log('failed...');
-                        setTimeout(go, 40);
-                    }
-                }
-                go();
-            });
-        },selector);
+        return vtry(this, (sel) => {
+            document.querySelector(sel).click();
+        }, selector);
     }
 
     async vwait(selector) {
@@ -129,30 +140,7 @@ module.exports = class PageExtension {
     }
 
     async vtry(callback) {
-        const maxRuns = 5;
-        const func = Function(`
-return new Promise((ok,fail) => {
-    let runs = 0;
-    const maxRuns = ${maxRuns};
-    const callback = ${callback.toString()};
-    const run = () => {
-        runs++;
-        try {
-            let result = callback();
-            ok(result);
-        } catch(e) {
-            if(runs >= maxRuns) {
-                fail(e);
-            } else {
-                setTimeout(run, 40); 
-            }
-        }
-    }
-    run();
-});
-`);
-        return this.evaluate(func);
-
+        return vtry(this, callback);
     }
 
     async vcolor(x,y) {

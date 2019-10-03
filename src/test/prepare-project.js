@@ -1,8 +1,8 @@
-const log = require('./log');
-const child_process = require('child_process');
-const copyRecursive = require('./copy-recursive');
+const log = require('./../log');
 const fs = require('fs');
 const path = require('path');
+const child_process = require('child_process');
+
 
 module.exports = async(name) => {
     const sourceDir = path.join('test', name) + '/';
@@ -20,7 +20,6 @@ module.exports = async(name) => {
 
 
     const cwd = targetDir;
-    log.info('yarn installing', targetDir);
     child_process.execFileSync('yarn', [ 'install' ], { cwd, stdio:'inherit' });
 
     const url = (file) => path.join(targetDir, file);

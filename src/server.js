@@ -13,7 +13,6 @@ const start = async(port) => {
     server = micro(async (req, res) => {
         let { url } = req;
         url = url.split('?')[0];
-        console.log(url);
         if(url === '/') {
             url = '/index.html';
         }

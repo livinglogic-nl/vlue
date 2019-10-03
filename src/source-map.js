@@ -3,21 +3,20 @@ const lines = require('./get-line-count');
 const vlq = require('vlq');
 
 const { SourceMapGenerator } = require('source-map');
-
 const { parse } = require('acorn');
+
+const chrome = require('./chrome');
 
 const getMappings = (e) => {
     const mappings = [];
 
     const lines = e.source.split('\n');
-
     const start = lines.indexOf('<script>') + 1;
     const end = (start>0) ? lines.indexOf('</script>') : lines.length;
-
     if(start>0) {
-        mappings.push( ...Array(start).fill('') );
+        mappings.push( ...Array(4).fill('') ); // export line + 3 other lines?
     } else {
-        mappings.push('');
+        mappings.push(''); // export line
     }
 
     let lastLine = 1;

@@ -1,5 +1,5 @@
+const prepareProject = require('./../src/test/prepare-project');
 const { runDev, runBuild } = require('./../src/test/run');
-const prepareProject = require('./../src/prepare-project');
 
 module.exports = ({ test, vuelStream }) => {
     test('Helpful error for src/index.js', async(t) => {

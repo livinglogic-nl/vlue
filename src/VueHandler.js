@@ -5,7 +5,7 @@ const convertExports = require('./convert-exports');
 const convertImports = require('./convert-imports');
 const Entry = require('./Entry');
 const Handler = require('./Handler');
-const { compileTemplate } = require('@vue/component-compiler-utils');
+const { parse, compileTemplate } = require('@vue/component-compiler-utils');
 
 const tagContents = (entry, tag) => {
     const re = new RegExp('<'+tag+'[^>]*>([\\s\\S]+)</'+tag+'>');
@@ -19,7 +19,8 @@ const tagContents = (entry, tag) => {
 
 
 let vueTemplateCompiler = null;
-const getCompiled = (template, filename) => {
+
+const getCompiler = () => {
     if(!vueTemplateCompiler) {
         const url = path.join('node_modules', 'vue-template-compiler');
         if(!fs.existsSync(url)) {
@@ -28,11 +29,15 @@ const getCompiled = (template, filename) => {
         }
         vueTemplateCompiler = require(path.join(process.cwd(), url));
     }
+    return vueTemplateCompiler;
+}
+
+const getCompiled = (template, filename) => {
 
     const compiled = compileTemplate({
         source: template,
         filename: filename,
-        compiler: vueTemplateCompiler,
+        compiler: getCompiler(),
         transformAssetUrls: false,
         isFunctional: false,
         isProduction: true,
@@ -70,6 +75,7 @@ module.exports = class VueHandler {
     }
 
     prepare(entry, sourceBundler, vendorBundler) {
+
         let { template, script, style } = sourceBundler.getMemory(entry);
         if(template) {
             template = template.replace(

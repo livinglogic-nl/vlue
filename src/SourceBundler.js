@@ -1,16 +1,23 @@
 const Entry = require('./Entry');
 const path = require('path');
 const resolve = require('./resolve');
-const sourceMap = require('./source-map');
+// const sourceMap = require('./source-map');
+
+let sourceMap;
 
 module.exports = class SourceBundler {
-    constructor() {
+    constructor(isDev) {
+        this.isDev = isDev;
         this.memoryMap = {};
         this.scriptMap = {};
         this.styleMap = {};
     }
 
-    newSession() {
+    newSession(filesChanged) {
+        delete require.cache[ require.resolve('./source-map') ];
+        sourceMap = require('./source-map');
+
+        this.filesChanged = filesChanged;
         this.todo = [];
         this.scripts = [];
         this.styles = [];
@@ -18,6 +25,9 @@ module.exports = class SourceBundler {
     }
 
     addTodo(url, content = null, context = 'script') {
+        if(this.scriptMap[url] && !this.filesChanged.includes(url)) {
+            return;
+        }
         let entry = this.todo.find(e => e.url === url);
         if(!entry) {
             entry = new Entry(url, content);
@@ -57,8 +67,10 @@ module.exports = class SourceBundler {
         if(runIndex) {
             source += `vuelImport('src/index.js');`;
         }
-        // const map = sourceMap.create(scripts);
-        // source += sourceMap.sourceMappingURL(map);
+        if(this.isDev) {
+            const map = sourceMap.create(scripts);
+            source += sourceMap.sourceMappingURL(map);
+        }
         return source;
     }
 

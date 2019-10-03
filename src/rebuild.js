@@ -3,7 +3,7 @@ const rebuildSource = require('./rebuild-source');
 
 module.exports = async({ roots, sourceBundler, vendorBundler }) => {
     try {
-        sourceBundler.newSession();
+        sourceBundler.newSession(roots);
 
         if(roots.length === 0) {
             roots = [ 'src/index.js' ];

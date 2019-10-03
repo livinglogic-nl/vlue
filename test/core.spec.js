@@ -1,5 +1,5 @@
+const prepareProject = require('./../src/test/prepare-project');
 const { runDev, runBuild } = require('./../src/test/run');
-const prepareProject = require('./../src/prepare-project');
 
 module.exports = ({ test, vuelStream }) => {
     test('Uses babel', async(t) => {
@@ -7,7 +7,7 @@ module.exports = ({ test, vuelStream }) => {
         await runBuild(project, async(vuelStream) => {
         });
     });
-    test('Changing a source file causes an update', async(t) => {
+    test.only('Changing a source file causes an update', async(t) => {
         const project = await prepareProject('basic');
         await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();

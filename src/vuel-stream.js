@@ -49,7 +49,7 @@ module.exports = class VuelStream {
     }
 
     waitForIdle() {
-        return this.messagePromise(({message}) => message === 'idle');
+        return this.messagePromise(({message}) => message.indexOf('idle') === 0)
     }
     waitForOk() {
         return this.messagePromise(({type}) => type === 'ok');

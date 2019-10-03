@@ -170,4 +170,5 @@ module.exports = {
         pagePromise = null;
 
     },
+    browser,
 };
