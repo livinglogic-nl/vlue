@@ -2,11 +2,9 @@ const prepareProject = require('./../src/test/prepare-project');
 const { runDev, runBuild } = require('./../src/test/run');
 
 module.exports = ({ test, vuelStream }) => {
-    test.only('Uses eslint', async(t) => {
+    test('Uses eslint', async(t) => {
         const project = await prepareProject('basic');
         await runDev(project, async(vuelStream) => {
-            await vuelStream.waitForError();
-
             await project.add('eslint.config.js', `
 module.exports = {
     parser: 'vue-eslint-parser',
@@ -23,17 +21,11 @@ module.exports = {
 `);
 
             await project.update('src/views/Home.vue', (str) => str);
-
             await vuelStream.waitForIdle();
 
         });
     });
-    test.only('Uses babel', async(t) => {
-        const project = await prepareProject('basic');
-        await runBuild(project, async(vuelStream) => {
-        });
-    });
-    test('Changing a source file causes an update', async(t) => {
+    test.only('Changing a source file causes an update', async(t) => {
         const project = await prepareProject('basic');
         await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();
@@ -57,6 +49,7 @@ module.exports = {
             // change back to make the puppet test pass again
             await project.update('src/views/Home.vue', (str) => str.replace(b,a));
             await vuelStream.waitForOk();
+            await vuelStream.waitForIdle();
         });
 
     });
@@ -81,6 +74,7 @@ module.exports = {
                 return str.replace(/[\s]it/, 'fit');
             });
             await vuelStream.waitForOk();
+            await vuelStream.waitForIdle();
         });
     });
 
@@ -93,6 +87,12 @@ module.exports = {
                 return str.replace(/[\s]it/, 'fit');
             });
             await vuelStream.waitForOk();
+            await vuelStream.waitForIdle();
         });
     });
+    // test('Uses babel', async(t) => {
+    //     const project = await prepareProject('basic');
+    //     await runBuild(project, async(vuelStream) => {
+    //     });
+    // });
 }

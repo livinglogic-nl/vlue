@@ -1,5 +1,4 @@
 const fs = require('fs');
-const lines = require('./get-line-count');
 const vlq = require('vlq');
 
 const { SourceMapGenerator } = require('source-map');
@@ -37,13 +36,19 @@ const getMappings = (e) => {
     return mappings.join(';');
 };
 
+const getLineCount = (str) => {
+    let length = 1;
+    let p = -1;
+    while ((p = str.indexOf('\n', p + 1)) != -1) { length++; }
+    return length;
+}
 
 const create = (entries) => {
     const sections = [];
 
     let offset = 0;
     entries.forEach(entry => {
-        let len = lines(entry.code);
+        let len = getLineCount(entry.code);
         sections.push({
             offset: { line:offset, column:0 },
             map: {

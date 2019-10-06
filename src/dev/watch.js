@@ -1,26 +1,20 @@
+const statWatch = require('./stat-watch');
 const log = require('./../log');
-const fs = require('fs');
 const update = require('./update');
 
-const watch = (url, callback) => {
-    fs.watch(url, { recursive: true }, (event, file) => {
-        callback(event, file);
-    });
-}
-
-const elapsed = (date,ms) => {
-    if(!date) return true;
-    return (new Date() - date) > ms;
-}
 
 let lastUpdate = null;
 let lastUpdateRequest = null;
+const requestUpdate = () => {
+    lastUpdateRequest = new Date;
+}
+
 let filesChanged = new Set;
 
-setInterval(() => {
+const debounce = () => {
+    setImmediate(debounce);
     if(!lastUpdateRequest) { return; }
-
-    if(elapsed(lastUpdateRequest,200)) {
+    if(new Date() - lastUpdateRequest > 200) {
         lastUpdateRequest = null;
         const filesChangedCopy = [...filesChanged];
         filesChanged.clear();
@@ -30,24 +24,26 @@ setInterval(() => {
         });
         lastUpdate = new Date;
     }
-},20);
+}
+debounce();
 
-const requestUpdate = () => { lastUpdateRequest = new Date; }
-watch('.', (e,file) => {
-    if(file.indexOf('.') === 0) { return; }
-    if(file.includes('/.')) { return; }
-    fs.lstat(file, (e, stats)=> {
-        if(!e && stats.isDirectory()) {
-            return;
+
+const callback = (type, url, stats) => {
+    log.trace(url,type);
+    if(type === 'changed') {
+        if(!stats.isDirectory()) {
+            filesChanged.add(url);
         }
-        if(e && e.code === 'ENOENT') {
-            log.trace(file, 'removed');
-        } else {
-            filesChanged.add(file);
-            log.trace(file, 'changed');
-        }
-        requestUpdate();
-    });
-});
+    }
+    requestUpdate();
+}
+
+statWatch([
+    'src',
+    'puppet',
+    'mock',
+], 20, callback);
+statWatch([ 'node_modules' ], 200, callback, 1);
 
 requestUpdate();
+

@@ -1,17 +1,15 @@
 const log = require('./log');
 const rebuildSource = require('./rebuild-source');
 
-module.exports = async({ roots, sourceBundler, vendorBundler }) => {
+module.exports = async({ filesChanged, sourceBundler, vendorBundler }) => {
     try {
-        sourceBundler.newSession(roots);
-
-        if(roots.length === 0) {
-            roots = [ 'src/index.js' ];
+        sourceBundler.newSession(filesChanged);
+        if(filesChanged.length === 0) {
+            filesChanged = [ 'src/index.js' ];
         }
-        for(let i=0; i<roots.length; i++) {
-            const root = roots[i];
-            if(root.indexOf('src') !== 0) { continue; }
-            await rebuildSource(root, sourceBundler, vendorBundler);
+        for await(let file of filesChanged) {
+            if(file.indexOf('src') !== 0) { continue; }
+            await rebuildSource(file, sourceBundler, vendorBundler);
         }
     } catch(e) {
         if(e.file && e.file === 'src/index.js') {

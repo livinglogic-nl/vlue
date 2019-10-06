@@ -3,7 +3,7 @@ const path = require('path');
 const resolve = require('./resolve');
 const sourceMap = require('./source-map');
 
-module.exports = class SourceBundler {
+class SourceBundler {
     constructor(isDev) {
         this.isDev = isDev;
         this.memoryMap = {};
@@ -98,3 +98,5 @@ module.exports = class SourceBundler {
         });
     }
 }
+
+module.exports = (isDev) => new SourceBundler(isDev);

@@ -7,7 +7,7 @@ const log = require('./log');
 const convertExports = require('./convert-exports');
 const vendorResolver = require('./vendor-resolver');
 
-module.exports = class VendorBundler {
+class VendorBundler {
     constructor() {
         this.vendors = new Set;
         this.dirty = true;
@@ -57,3 +57,5 @@ module.exports = class VendorBundler {
         return script;
     }
 }
+
+module.exports = () => new VendorBundler;

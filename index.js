@@ -9,8 +9,6 @@ process.on('unhandledRejection', (reason) => {
 });
 
 
-const vuelSettings = require('./src/vuel-settings');
-const localSettings = require('./src/local-settings');
 
 let isDev;
 if(process.env.NODE_ENV === undefined) {

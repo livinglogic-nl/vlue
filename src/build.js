@@ -7,11 +7,8 @@ const rebuild = require('./rebuild');
 const rimraf = require('rimraf');
 const fs = require('fs');
 
-const VendorBundler = require('./VendorBundler');
-const SourceBundler = require('./SourceBundler');
-
-const sourceBundler = new SourceBundler();
-const vendorBundler = new VendorBundler();
+const vendorBundler = require('./vendor-bundler')();
+const sourceBundler = require('./source-bundler')(false);
 
 const emptyDirectory = (name) => {
     if(fs.existsSync(name)) {
