@@ -1,4 +1,5 @@
 const Entry = require('./Entry');
+const log = require('./log');
 const path = require('path');
 const fs = require('fs');
 

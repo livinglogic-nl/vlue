@@ -7,9 +7,10 @@ const vuelSettings = require('./vuel-settings');
 const filters = [
     // (file) => file.includes('.common'),
     // (file) => file.includes('.dev'),
-    // (file) => file.match(/\.js$/),
+
     (file) => !file.includes('.esm'),
     (file) => file.includes('.min'),
+
     (file) => file.match(/\.js$/),
 ];
 
@@ -27,10 +28,23 @@ module.exports = (vendor) => {
         return bullsEye;
     }
     try {
-        files = fs.readdirSync(path.join('node_modules', vendor, 'dist'));
+        files = fs.readdirSync(path.join(vendorPath, 'dist'));
     } catch(e) {
+        // no dist folder
         subdir = '';
-        files = fs.readdirSync(path.join('node_modules', vendor));
+        try {
+            const packageJson = fs.readFileSync(path.join(vendorPath,'package.json'))
+            const { browser } = JSON.parse(packageJson);
+            if(!browser) {
+                throw Error('no browser field defined');
+            } 
+            files = [
+                Object.values(browser)[0]
+            ];
+
+        } catch(e) {
+            files = fs.readdirSync(path.join('node_modules', vendor));
+        }
     }
     for(let i=0; i<filters.length; i++) {
         let test = files.filter( filters[i] );

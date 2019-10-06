@@ -3,7 +3,7 @@ const log = require('./log');
 const fs = require('fs');
 
 let config = {};
-module.exports = {
+const result = {
     update() {
         try {
             const url = path.join(process.cwd(), 'vuel.js');
@@ -31,3 +31,7 @@ module.exports = {
         return config.mock.xhr | null;
     },
 };
+
+result.update();
+
+module.exports = result;

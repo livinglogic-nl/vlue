@@ -74,6 +74,10 @@ module.exports = class VueHandler {
         return entry.updateMethod !== undefined;
     }
 
+    getLintString(entry, sourceBundler, vendorBundler) {
+        return entry.source;
+    }
+
     prepare(entry, sourceBundler, vendorBundler) {
 
         let { template, script, style } = sourceBundler.getMemory(entry);

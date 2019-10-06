@@ -58,7 +58,10 @@ module.exports = class VuelStream {
         return this.messagePromise(({type}) => type === 'fail');
     }
 
-    waitForError(errorMessage) { 
+    waitForError(errorMessage = null) { 
+        if(!errorMessage) {
+            return this.messagePromise(({type,message}) => type === 'error');
+        }
         return this.messagePromise(({type,message}) => type === 'error' && message === errorMessage);
     }
     messagePromise(callback) {

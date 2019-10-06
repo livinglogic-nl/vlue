@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "*",
+    "eslint": "*",
+    "eslint-plugin-vue": "*",
     "vue": "*",
     "vue-router": "*",
     "vue-hot-reload-api": "*",

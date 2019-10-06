@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const log = require('./log');
 const path = require('path');
 const fs = require('fs');
@@ -23,6 +24,7 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
     sourceBundler.addTodo(root);
     const toFinish = [];
 
+
     const { todo } = sourceBundler;
     while(todo.length) {
         const entry = todo.shift();
@@ -34,7 +36,6 @@ module.exports = async(root, sourceBundler, vendorBundler) => {
         if(!handler.detectChange(entry, sourceBundler, vendorBundler)) {
             continue;
         }
-
         handler.prepare(entry, sourceBundler, vendorBundler);
         toFinish.push({ entry, handler });
     }

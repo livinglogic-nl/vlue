@@ -17,7 +17,7 @@ const start = async(port) => {
             url = '/index.html';
         }
         if(url === '/favicon.ico') {
-            return fs.createReadStream(path.join(__dirname,'default-favicon.ico'));
+            return fs.createReadStream(path.join(__dirname, 'web', 'default-favicon.ico'));
         }
         if(url.includes('.html')) {
             res.setHeader('Content-Type', 'text/html');

@@ -9,6 +9,10 @@ module.exports = class Handler {
         return changed;
     }
 
+    getLintString(entry, sourceBundler, vendorBundler) {
+        return null;
+    }
+
     prepare(entry, sourceBundler, vendorBundler) {
         convertImports(entry, sourceBundler, vendorBundler);
         convertExports(entry);

@@ -2,12 +2,38 @@ const prepareProject = require('./../src/test/prepare-project');
 const { runDev, runBuild } = require('./../src/test/run');
 
 module.exports = ({ test, vuelStream }) => {
-    test('Uses babel', async(t) => {
+    test.only('Uses eslint', async(t) => {
+        const project = await prepareProject('basic');
+        await runDev(project, async(vuelStream) => {
+            await vuelStream.waitForError();
+
+            await project.add('eslint.config.js', `
+module.exports = {
+    parser: 'vue-eslint-parser',
+    parserOptions: {
+        ecmaVersion: 2018,
+        sourceType: 'module',
+    },
+    plugins: ['vue'],
+    extends: [
+        'eslint:recommended',
+        'plugin:vue/recommended',
+    ],
+};
+`);
+
+            await project.update('src/views/Home.vue', (str) => str);
+
+            await vuelStream.waitForIdle();
+
+        });
+    });
+    test.only('Uses babel', async(t) => {
         const project = await prepareProject('basic');
         await runBuild(project, async(vuelStream) => {
         });
     });
-    test.only('Changing a source file causes an update', async(t) => {
+    test('Changing a source file causes an update', async(t) => {
         const project = await prepareProject('basic');
         await runDev(project, async(vuelStream) => {
             await vuelStream.waitForIdle();

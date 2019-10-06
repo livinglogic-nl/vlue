@@ -1,5 +1,6 @@
 <template>
     <div id="app">
+        <div a="trigger" b="an" c="eslint" d="error" />
         <router-view />
     </div>
 </template>

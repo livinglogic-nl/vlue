@@ -1,9 +1,7 @@
 const Entry = require('./Entry');
 const path = require('path');
 const resolve = require('./resolve');
-// const sourceMap = require('./source-map');
-
-let sourceMap;
+const sourceMap = require('./source-map');
 
 module.exports = class SourceBundler {
     constructor(isDev) {
@@ -14,9 +12,6 @@ module.exports = class SourceBundler {
     }
 
     newSession(filesChanged) {
-        delete require.cache[ require.resolve('./source-map') ];
-        sourceMap = require('./source-map');
-
         this.filesChanged = filesChanged;
         this.todo = [];
         this.scripts = [];

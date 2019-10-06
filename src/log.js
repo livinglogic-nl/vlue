@@ -8,15 +8,16 @@ const emoji = {
     ok: '✅',
     fail: '❌',
     tip: '🎉',
+    lint: '🧼',
 }
 const log = (type, ...rest) => {
-    const d = new Date();
-    const az = (nr) => nr < 10 ? '0'+nr : ''+nr;
-    const time = [
-        az(d.getHours()),
-        az(d.getMinutes()),
-        az(d.getSeconds()),
-    ].join(':');
+    // const d = new Date();
+    // const az = (nr) => nr < 10 ? '0'+nr : ''+nr;
+    // const time = [
+    //     az(d.getHours()),
+    //     az(d.getMinutes()),
+    //     az(d.getSeconds()),
+    // ].join(':');
 
     console.log(emoji[type], rest.join(' '));
 }
@@ -40,6 +41,10 @@ module.exports = {
         if(providedTips.has(message)) { return; }
         providedTips.add(message);
         log('tip', message);
+    },
+
+    lint(message, ...rest) {
+        log('lint', message, ...rest);
     },
     result(ok, message, ...rest) {
         log(ok ? 'ok' : 'fail', message, ...rest);
