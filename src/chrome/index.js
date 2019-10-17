@@ -1,7 +1,7 @@
 const extendPage = require('./extend-page');
-const vuelSettings = require('./../vuel-settings');
+const vuelSettings = require('../vuel-settings');
 const puppeteer = require('puppeteer-core');
-const log = require('./../log');
+const log = require('../log');
 
 let browser; 
 let pagePromise = null;

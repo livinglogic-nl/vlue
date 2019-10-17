@@ -1,5 +1,5 @@
 const statWatch = require('./stat-watch');
-const log = require('./../log');
+const log = require('../log');
 const update = require('./update');
 
 

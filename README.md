@@ -1,57 +1,82 @@
-# Vuel ⛽
+<style>
 
-> The juice that super charges your vue development experience!
+code {
+background: #eee;
+padding: 8px;
+}
 
-## Why
+</style>
 
-It is just-another-bundler **but** focused on development:
-- No building of vendor code (makes use of packaged dist files)
-- Assumes Chrome or Firefox (no need for ancient fallbacks while developing)
-- Lightning fast puppeteer tests (might be considered hacky but definitely worth it)
-- Listens for changes to the build configuration, should make it easier for you to adapt it to your needs.
+# Vuel
+![logo](test/basic/src/logo.svg "logo")
+> The juice that drives your vue development experience!
 
-### No building of vendor code
-Most npm packages come with a prebuilt dist file. Most of the time there is no need to mess with library code, and so no reason to rebuild it.
+## Highlights
 
-Start up is pretty much instant:
+Assuming a recent Chrome browser during development allows us to have:
 
-TODO insert amazing gif of speed (with time to prove)
+- Fast startup and bundling during development
+> insert impressive gif 
 
-### Assumes Chrome
-By assuming a recent browser while developing, code does not have to be babelicious. Assuming Chrome allows us to remote control it with puppeteer, eliminating seperate hot-reloading scripts.
+- Integrated puppeteer testing
+> insert impressive gif 
 
-### Lightning fast puppeteer tests
-Puppeteer is already amazing in and out of itself (TY).
-A little trick i thought of makes it even more mindblowing... just look at em go:
+- Integrated response mocking
+> insert impressive gif 
 
-TODO insert amazing gif of speed (with time to prove)
+## Rationale
 
-## Scope
+Vuel is trying to be a **one-size-fits-some** bundler.
+By assuming a particular use, it allows to focus on features and performance.
 
-### Development
-- Hot-Reloading
-- ESLint with autofix on triple save
-- Puppeteer integration
-- Request mocking
-- Websocket mocking
-
-### Production build
-- Terser
-- Babelify
-- Minify
+The benefit of **one-size-fits-all** bundlers such as Webpack comes at a cost.
+Making any setup a possibility, can mean some heavy configuration at times.
+Catering for any kind of use makes for less optimal performance.
 
 
-## Install
+## Assumptions
 
-```console
-npm i vuel
+- Recent chrome browser
+- MacOs / Windows
+
+## Installation
+
+```
+npm i -g vuel
 ```
 
-## Run
+## Usage
 
-```console
-npm run vuel
+### While developing
+
+```
+vuel dev
 ```
 
-## Roadmap
-- Firefox support
+- Starts a dev server
+- Uses **src/index.html** as the template for html
+- Uses **src/index.js** as the entry point for the application
+- Vue single-file-components are handled using Sass for style
+- Any discovered javascript within the **src** directory is linted with ESLint
+- Watches for changes, hot-reloading when possible
+- Puppeteer tests are run when idle
+
+### When distributing
+```
+vuel build
+```
+- Starts a production build
+- Generates output in the **dist** folder
+- Application code ends up in **dist/index.js**
+- Vendor code ends up in **dist/vendor.js**
+- Css ends up in **dist/style.css**
+- Javacript code is babelified using babel
+- Javacript code is minified using terser
+
+After building you can do a
+```
+vuel test
+```
+To run puppeteer tests on the distribution code.
+
+

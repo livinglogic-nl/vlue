@@ -1,5 +1,5 @@
-const localSettings = require('./../local-settings');
-const vuelSettings = require('./../vuel-settings');
+const localSettings = require('../local-settings');
+const vuelSettings = require('../vuel-settings');
 
 const removeChanged = require('./remove-changed');
 module.exports =  (lastUpdate, filesChanged) => {

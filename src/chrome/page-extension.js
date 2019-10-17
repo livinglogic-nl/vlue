@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const log = require('./../log');
-const vuelSettings = require('./../vuel-settings');
+const log = require('../log');
+const vuelSettings = require('../vuel-settings');
 const pathToRegexp = require('path-to-regexp');
 const header = (name, value) => ({name,value});
 
@@ -72,7 +72,7 @@ module.exports = class PageExtension {
 
                 this.clear();
                 const index = require(xhrIndex);
-                this.xhr.push(index);
+                this.push(index);
             }
         };
 

@@ -1,4 +1,4 @@
-const VuelStream = require('./../vuel-stream');
+const VuelStream = require('../vuel-stream');
 const child_process = require('child_process');
 
 let runningDev = null;

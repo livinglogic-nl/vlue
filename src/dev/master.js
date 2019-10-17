@@ -1,15 +1,13 @@
+const linter = require('./linter');
 const startServer = require('./start-server');
+const log = require('../log');
 const gatherActions = require('./gather-actions');
 const hotReload = require('./hot-reload');
-
-const chrome = require('./../chrome');
-const rebuild = require('./../rebuild');
-const time = require('./../time');
-const puppetTest = require('./../puppet-test');
-
+const chrome = require('../chrome');
+const rebuild = require('../rebuild');
+const time = require('../time');
+const puppetTest = require('../puppet-test');
 const statWatch = require('./stat-watch');
-const log = require('./../log');
-
 const vendorBundler = require('../vendor-bundler')();
 const sourceBundler = require('../source-bundler')(true);
 
@@ -58,13 +56,13 @@ const debounce = async() => {
     lastUpdate = new Date;
 
     await puppetTest.runDev(filesChanged);
-    // await linter.lint({
-    //     filesChanged,
-    //     sourceBundler,
-    //     lintAll,
-    //     fix: true,
-    //     fix: false,
-    // });
+    await linter.lint({
+        filesChanged,
+        sourceBundler,
+        lintAll: actions.lintAll,
+        fix: true,
+        fix: false,
+    });
 
     log.info('idle');
 }

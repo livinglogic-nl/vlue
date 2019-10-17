@@ -1,5 +1,5 @@
-const prepareProject = require('./../src/test/prepare-project');
-const { runDev, runBuild } = require('./../src/test/run');
+const prepareProject = require('../src/test/prepare-project');
+const { runDev, runBuild } = require('../src/test/run');
 
 module.exports = ({ test, vuelStream }) => {
     test('Uses eslint', async(t) => {

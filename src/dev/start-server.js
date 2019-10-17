@@ -1,6 +1,6 @@
-const vuelSettings = require('./../vuel-settings');
-const prepareIndex = require('./../prepare-index');
-const server = require('./../server');
+const vuelSettings = require('../vuel-settings');
+const prepareIndex = require('../prepare-index');
+const server = require('../server');
 module.exports = (sourceBundler, vendorBundler) => {
     server.addCallback('/index.html', () => {
         return prepareIndex({ isDev:true, sourceBundler, vendorScript:vendorBundler.fullScript });

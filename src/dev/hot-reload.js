@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const log = require('./../log');
+const log = require('../log');
 module.exports = {
     install(vendorBundler) {
         const lib = 'vue-hot-reload-api';

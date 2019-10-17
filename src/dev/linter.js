@@ -1,5 +1,5 @@
-const log = require('./../log');
-const requireLocal = require('./../require-local');
+const log = require('../log');
+const requireLocal = require('../require-local');
 const chalk = require('chalk');
 const fs = require('fs');
 module.exports = {
