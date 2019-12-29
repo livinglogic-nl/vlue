@@ -14,8 +14,9 @@
     "eslint": "*",
     "eslint-plugin-vue": "*",
     "vue": "*",
-    "vue-router": "*",
     "vue-hot-reload-api": "*",
-    "vue-template-compiler": "*"
+    "vue-router": "*",
+    "vue-template-compiler": "*",
+    "vuex": "^3.1.1"
   }
 }

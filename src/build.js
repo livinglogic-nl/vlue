@@ -22,6 +22,7 @@ module.exports = async() => {
     emptyDirectory('dist');
 
     const result = await rebuild({
+        filesChanged: [],
         roots:[],
         sourceBundler,
         vendorBundler,
@@ -60,6 +61,10 @@ module.exports = async() => {
         fsPromises.writeFile('dist/index.js', script),
         fsPromises.writeFile('dist/vendor.js', vendor),
         fsPromises.writeFile('dist/style.css', style),
+        ...Object.entries(sourceBundler.staticMap).map(([name,buffer]) => {
+            console.log(name);
+            return fsPromises.writeFile(`dist/${name}`, buffer);
+        }),
     ]);
     log.info('built');
 }

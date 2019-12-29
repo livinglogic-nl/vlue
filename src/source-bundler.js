@@ -9,6 +9,7 @@ class SourceBundler {
         this.memoryMap = {};
         this.scriptMap = {};
         this.styleMap = {};
+        this.staticMap = {};
     }
 
     newSession(filesChanged) {
@@ -85,15 +86,22 @@ class SourceBundler {
         return this._fullStyle;
     }
 
+    addStatic(name, buffer) {
+        this.staticMap[name] = buffer;
+    }
 
     requestUrl(entry, url) {
-        const resolved = resolve(path.dirname(entry.url), url);
+        const parts = url.split('#');
+        const file = parts[0];
+        const rest = parts.length > 1 ? '#'+parts[1] : '';
+        const resolved = resolve(path.dirname(entry.url), file);
         this.addTodo(resolved, null, 'nonscript');
-        return 'vuel-url:' + resolved;
+        return 'vuel-url:' + resolved + rest;
     }
 
     resolveUrls(entry) {
-        entry.code = entry.code.replace(/vuel-url:([^\)'"]+)/g, (all, url) => {
+        entry.code = entry.code.replace(/vuel-url:([^\)'"#]+)/g, (all, url) => {
+            console.log(url);
             return this.scriptMap[url].uri;
         });
     }

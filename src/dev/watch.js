@@ -38,12 +38,14 @@ const callback = (type, url, stats) => {
     requestUpdate();
 }
 
-statWatch([
-    'src',
-    'puppet',
-    'mock',
-], 20, callback);
-statWatch([ 'node_modules' ], 200, callback, 1);
+fs.watch('.', callback);
+
+// statWatch([
+//     'src',
+//     'puppet',
+//     'mock',
+// ], 100, callback);
+// statWatch([ 'node_modules' ], 1000, callback, 1);
 
 requestUpdate();
 

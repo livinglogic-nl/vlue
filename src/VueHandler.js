@@ -8,7 +8,7 @@ const Handler = require('./Handler');
 const { parse, compileTemplate } = require('@vue/component-compiler-utils');
 
 const tagContents = (entry, tag) => {
-    const re = new RegExp('<'+tag+'[^>]*>([\\s\\S]+)</'+tag+'>');
+    const re = new RegExp('^<'+tag+'[^>]*>([\\s\\S]+)</'+tag+'>', 'm');
     const match = entry.source.match(re);
     if(match) {
         return match[1];
@@ -85,6 +85,10 @@ module.exports = class VueHandler {
             template = template.replace(
                 / src=.(\.[^"']+)./g,
                 (all,url) => ` src="${sourceBundler.requestUrl(entry, url)}"`)
+
+            template = template.replace(
+                / xlink:href=.(\.[^"']+)./g,
+                (all,url) => ` xlink:href="${sourceBundler.requestUrl(entry, url)}"`)
         }
 
         if(template !== null) {

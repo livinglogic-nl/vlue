@@ -10,7 +10,8 @@ module.exports = class Entry {
 
         if(code === null) {
             try {
-                code = fs.readFileSync(url).toString().trim();
+                this.raw = fs.readFileSync(url)
+                code = this.raw.toString().trim();
             } catch(e) {
                 throw new NotFoundError(url);
             }

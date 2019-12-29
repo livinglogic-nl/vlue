@@ -62,6 +62,7 @@ const stop = () => {
 }
 
 const add = (path, content) => {
+    console.log(content.length / 1024);
     map[path] = content;
 }
 const addCallback = (path, content) => {

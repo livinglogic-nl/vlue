@@ -1,3 +1,4 @@
+const fs = require('fs');
 const linter = require('./linter');
 const startServer = require('./start-server');
 const log = require('../log');
@@ -19,7 +20,7 @@ const requestUpdate = () => { lastUpdateRequest = new Date; }
 
 let filesChangedSet = new Set;
 const debounce = async() => {
-    setImmediate(debounce);
+    setTimeout(debounce,40);
     if(!lastUpdateRequest) { return; }
     if(new Date() - lastUpdateRequest < 200) { return; }
 
@@ -32,6 +33,10 @@ const debounce = async() => {
     const actions = gatherActions(lastUpdate, filesChanged);
     if(actions.build) {
         await rebuild({ filesChanged, sourceBundler, vendorBundler });
+
+        Object.entries(sourceBundler.staticMap).map(([name, buffer]) => {
+            server.add('/'+name, buffer);
+        });
         if(vendorBundler.changed()) {
             hotReload.install(vendorBundler);
             server.add('/vendor.js', [
@@ -82,8 +87,8 @@ statWatch([
     'src',
     'puppet',
     'mock',
-], 20, onFileChange);
-statWatch([ 'node_modules' ], 200, onFileChange, 1);
+], 200, onFileChange);
+// statWatch([ 'node_modules' ], 2000, onFileChange, 1);
 
 requestUpdate();
 

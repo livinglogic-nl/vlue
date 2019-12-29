@@ -47,7 +47,7 @@ const create = (entries) => {
     const sections = [];
 
     let offset = 0;
-    entries.forEach(entry => {
+    entries.filter(e => !e.file).forEach(entry => {
         let len = getLineCount(entry.code);
         sections.push({
             offset: { line:offset, column:0 },

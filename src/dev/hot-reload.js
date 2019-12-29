@@ -4,7 +4,7 @@ const log = require('../log');
 module.exports = {
     install(vendorBundler) {
         const lib = 'vue-hot-reload-api';
-        const libPath = path.join('node_modules', lib);
+        const libPath = path.join('node_modules', lib, 'dist');
         if(fs.existsSync(libPath)) {
             vendorBundler.add(lib);
         } else {
@@ -16,7 +16,9 @@ module.exports = {
     async reload(page, sourceBundler) {
         const scripts = sourceBundler.scripts;
         if(scripts.length) {
-            const mustRunRoot = scripts.find(entry => entry.updateMethod === undefined);
+            const mustRunRoot = scripts.find(entry => {
+                return entry.updateMethod === undefined || entry.url.includes('src/store');
+            });
             const toClear = mustRunRoot ? Object.values(sourceBundler.scriptMap) : scripts;
 
             //clear old instances
@@ -30,6 +32,7 @@ module.exports = {
             await page.evaluate(script);
 
             if(mustRunRoot) {
+                log.trace('cold reload');
                 log.trace('cold reload');
                 await page.evaluate(() => {
                     delete vuelInstanced['vue-hot-reload-api'];

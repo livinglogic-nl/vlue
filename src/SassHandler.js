@@ -19,7 +19,7 @@ module.exports = class SassHandler extends Handler {
         });
 
         code = code.replace(
-                /url\(.?(\.[^"']+).?\)/g,
+                /url\(.?(\..+?).?\)/g,
                 (all,url) => `url(${sourceBundler.requestUrl(entry, url)})`)
         entry.code = code;
 
