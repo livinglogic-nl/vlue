@@ -6,7 +6,7 @@ const child_process = require('child_process');
 
 module.exports = async(name) => {
     const sourceDir = path.join('test', name) + '/';
-    const targetDir = '/tmp/vuel-test';
+    const targetDir = '/tmp/vlue-test';
 
     child_process.execFileSync('rsync', [
         '-av',

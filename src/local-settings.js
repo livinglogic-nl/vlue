@@ -6,11 +6,11 @@ let config = {};
 const result = {
     update() {
         try {
-            const url = path.join(process.cwd(), 'vuel.local.js');
+            const url = path.join(process.cwd(), 'vlue.local.js');
             delete require.cache[ require.resolve(url) ];
             config = require(url);
         } catch(e) {
-            log.tip('Adding a vuel.local.js allows for local setup');
+            log.tip('Adding a vlue.local.js allows for local setup');
             config = {};
         }
     },

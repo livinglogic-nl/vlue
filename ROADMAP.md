@@ -9,13 +9,13 @@ Should showcase core strengths of Vuel:
 ## DOD
 - The readme explains the following:
 - Logo + short description of Vuel
-- You can 'npm i -g vuel'
-- Using 'vuel demo' you can create the demo project
-- Entering the demo project you can do 'vuel' which starts a dev server and connects a chrome browser
+- You can 'npm i -g vlue'
+- Using 'vlue demo' you can create the demo project
+- Entering the demo project you can do 'vlue' which starts a dev server and connects a chrome browser
 - Changing a file in the /src directory hot reloads
 - Puppeteer tests are automatically run in the background after 10 seconds idle.
 - Renaming a it() to a fit() in a spec file runs that test in the foreground (and no longer the background stuff)
-- Using 'vuel build' you can create a 'production' build:
+- Using 'vlue build' you can create a 'production' build:
     - A dist folder is created containing all the files to statically host in NginX
 
 # Version 1.1

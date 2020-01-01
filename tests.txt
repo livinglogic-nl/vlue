@@ -4,7 +4,7 @@ hot-reload
     changing css reloads css
 
 puppet
-    setting the puppet property in vuel.local.js retests puppet script on changes
+    setting the puppet property in vlue.local.js retests puppet script on changes
 
 flags
     the --headless flag causes it to launch chrome in headless mode

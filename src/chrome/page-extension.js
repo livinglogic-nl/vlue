@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const log = require('../log');
-const vuelSettings = require('../vuel-settings');
+const vlueSettings = require('../vlue-settings');
 const pathToRegexp = require('path-to-regexp');
 const header = (name, value) => ({name,value});
 
@@ -81,7 +81,7 @@ module.exports = class PageExtension {
         await client.send('Fetch.enable');
         client.on('Fetch.requestPaused', async(obj) => {
             const { requestId } = obj;
-            const url = obj.request.url.replace(vuelSettings.domain, '');
+            const url = obj.request.url.replace(vlueSettings.domain, '');
             for(let i=xhrStack.length-1; i>=0; i--) {
                 const entry = xhrStack[i][url];
                 if(entry !== undefined) {
@@ -121,7 +121,7 @@ module.exports = class PageExtension {
     }
 
     async route(path = '') {
-        const url = vuelSettings.domain + '/#/' + path;
+        const url = vlueSettings.domain + '/#/' + path;
         await this.goto(url);
         await this.evaluate(() => {
             return new Promise(ok => {

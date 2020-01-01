@@ -61,7 +61,7 @@ class SourceBundler {
     buildScript(scripts, runIndex = false) {
         let source = scripts.map(e => e.code).join('');
         if(runIndex) {
-            source += `vuelImport('src/index.js');`;
+            source += `vlueImport('src/index.js');`;
         }
         if(this.isDev) {
             const map = sourceMap.create(scripts);
@@ -96,11 +96,11 @@ class SourceBundler {
         const rest = parts.length > 1 ? '#'+parts[1] : '';
         const resolved = resolve(path.dirname(entry.url), file);
         this.addTodo(resolved, null, 'nonscript');
-        return 'vuel-url:' + resolved + rest;
+        return 'vlue-url:' + resolved + rest;
     }
 
     resolveUrls(entry) {
-        entry.code = entry.code.replace(/vuel-url:([^\)'"#]+)/g, (all, url) => {
+        entry.code = entry.code.replace(/vlue-url:([^\)'"#]+)/g, (all, url) => {
             console.log(url);
             return this.scriptMap[url].uri;
         });

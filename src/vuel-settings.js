@@ -6,11 +6,11 @@ let config = {};
 const result = {
     update() {
         try {
-            const url = path.join(process.cwd(), 'vuel.js');
+            const url = path.join(process.cwd(), 'vlue.js');
             delete require.cache[ require.resolve(url) ];
             config = require(url);
         } catch(e) {
-            log.tip('Adding a vuel.js allows for general setup');
+            log.tip('Adding a vlue.js allows for general setup');
             config = {};
         }
     },

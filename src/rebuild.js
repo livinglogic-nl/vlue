@@ -13,7 +13,7 @@ module.exports = async({ filesChanged, sourceBundler, vendorBundler }) => {
         }
     } catch(e) {
         if(e.file && e.file === 'src/index.js') {
-            log.error('vuel relies on src/index.js');
+            log.error('vlue relies on src/index.js');
         } else {
             throw e;
         }

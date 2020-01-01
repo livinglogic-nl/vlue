@@ -1,4 +1,4 @@
-const vuelSettings = require('../vuel-settings');
+const vlueSettings = require('../vlue-settings');
 const prepareIndex = require('../prepare-index');
 const server = require('../server');
 module.exports = (sourceBundler, vendorBundler) => {
@@ -8,6 +8,6 @@ module.exports = (sourceBundler, vendorBundler) => {
     server.addCallback('/index.js', () => {
         return sourceBundler.fullScript;
     });
-    server.start(vuelSettings.port);
+    server.start(vlueSettings.port);
     return server;
 }

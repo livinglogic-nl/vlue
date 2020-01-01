@@ -22,8 +22,8 @@ module.exports = (entry, sourceBundler, vendorBundler) => {
             sourceBundler.addTodo(url);
         }
         if(as) {
-            return `const ${as} = vuelImport('${url}');`;
+            return `const ${as} = vlueImport('${url}');`;
         }
-        return `vuelImport('${url}');`;
+        return `vlueImport('${url}');`;
     });
 }

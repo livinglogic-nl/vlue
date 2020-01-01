@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-const vuel = require('.');
-vuel.start({});
+const vlue = require('.');
+vlue.start({});

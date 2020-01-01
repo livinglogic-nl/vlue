@@ -1,7 +1,7 @@
 const log = require('./log');
 const path = require('path');
 const fs = require('fs');
-const vuelSettings = require('./vuel-settings');
+const vlueSettings = require('./vlue-settings');
 
 
 const filters = [
@@ -15,7 +15,7 @@ const filters = [
 ];
 
 module.exports = (vendor) => {
-    const map = vuelSettings.resolve;
+    const map = vlueSettings.resolve;
     if(map[vendor]) {
         return map[vendor];
     }

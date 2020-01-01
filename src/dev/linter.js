@@ -5,7 +5,7 @@ const fs = require('fs');
 module.exports = {
     lint({filesChanged, sourceBundler, lintAll = false, fix = false}) {
         if(!fs.existsSync('eslint.config.js')) {
-            log.tip('Adding an eslint.config.js makes vuel lint your code');
+            log.tip('Adding an eslint.config.js makes vlue lint your code');
             return;
         }
 

@@ -8,7 +8,7 @@ module.exports = async(port) => {
         const loc = require('chrome-location');
         browser = await puppeteer.launch({
             executablePath: loc,
-            userDataDir: '/tmp/vuel-data-dir',
+            userDataDir: '/tmp/vlue-data-dir',
             headless: false,
             defaultViewport: null,
             args: [

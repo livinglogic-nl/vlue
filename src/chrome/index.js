@@ -1,5 +1,5 @@
 const extendPage = require('./extend-page');
-const vuelSettings = require('../vuel-settings');
+const vlueSettings = require('../vlue-settings');
 const puppeteer = require('puppeteer-core');
 const log = require('../log');
 
@@ -18,7 +18,7 @@ const startup = async() => {
         const loc = require('chrome-location');
         browser = await puppeteer.launch({
             executablePath: loc,
-            userDataDir: '/tmp/vuel-data-dir',
+            userDataDir: '/tmp/vlue-data-dir',
             headless: false,
             defaultViewport: null,
             args: [
@@ -30,7 +30,7 @@ const startup = async() => {
 }
 
 const getPage = async() => {
-    const domain = vuelSettings.domain;
+    const domain = vlueSettings.domain;
     if(!pagePromise) {
         pagePromise = new Promise(async(ok) => {
             await startup();

@@ -33,7 +33,7 @@ class VendorBundler {
     }
 
     get supportScript() {
-        let script = fs.readFileSync(path.join(__dirname, 'web', 'vuel-support.js')).toString();
+        let script = fs.readFileSync(path.join(__dirname, 'web', 'vlue-support.js')).toString();
         script = replaceEnvs(script);
         return script;
     }

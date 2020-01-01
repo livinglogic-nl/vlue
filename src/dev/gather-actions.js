@@ -1,5 +1,5 @@
 const localSettings = require('../local-settings');
-const vuelSettings = require('../vuel-settings');
+const vlueSettings = require('../vlue-settings');
 
 const removeChanged = require('./remove-changed');
 module.exports =  (lastUpdate, filesChanged) => {
@@ -8,8 +8,8 @@ module.exports =  (lastUpdate, filesChanged) => {
     let updateXHR = lastUpdate === null;
     let build = lastUpdate === null;
 
-    removeChanged(filesChanged, 'vuel.js', () => { vuelSettings.update(); });
-    removeChanged(filesChanged, 'vuel.local.js', () => { localSettings.update(); });
+    removeChanged(filesChanged, 'vlue.js', () => { vlueSettings.update(); });
+    removeChanged(filesChanged, 'vlue.local.js', () => { localSettings.update(); });
 
 
     removeChanged(filesChanged, 'eslint.config.js', () => { lintAll = true; });

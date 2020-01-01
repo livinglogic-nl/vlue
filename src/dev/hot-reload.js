@@ -24,7 +24,7 @@ module.exports = {
             //clear old instances
             await page.evaluate((names) => {
                 names.forEach(name => {
-                    delete vuelInstanced[name];
+                    delete vlueInstanced[name];
                 });
             }, toClear.map(entry => entry.name));
 
@@ -35,18 +35,18 @@ module.exports = {
                 log.trace('cold reload');
                 log.trace('cold reload');
                 await page.evaluate(() => {
-                    delete vuelInstanced['vue-hot-reload-api'];
-                    vuelImport('src/index.js');
+                    delete vlueInstanced['vue-hot-reload-api'];
+                    vlueImport('src/index.js');
                 });
             } else {
                 await Promise.all(scripts.map(async(entry) => {
                     log.trace('hot reload', entry.url, entry.updateMethod);
                     return page.evaluate((name, updateMethod) => {
-                        const api = vuelImport('vue-hot-reload-api');
+                        const api = vlueImport('vue-hot-reload-api');
                         if(updateMethod === 'vue.rerender') {
-                            api.rerender(name, vuelImport(name));
+                            api.rerender(name, vlueImport(name));
                         } else {
-                            api.reload(name, vuelImport(name));
+                            api.reload(name, vlueImport(name));
                         }
                     }, entry.name, entry.updateMethod);
                 }));

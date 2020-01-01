@@ -1,10 +1,10 @@
 {
-  "name": "@vuel/vuel",
-  "version": "0.0.1",
+  "name": "vlue",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "bin": {
-    "vuel": "index.js"
+    "vlue": "index.js"
   },
   "scripts": {
     "test": "node src/test.js"

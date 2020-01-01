@@ -1,5 +1,5 @@
 const log = require('./log');
-const VuelStream = require('./vuel-stream');
+const VuelStream = require('./vlue-stream');
 const assert = require('assert');
 const JSONStream = require('json-stream');
 const { EventEmitter } = require('events');
@@ -16,7 +16,7 @@ const { killDev } = require('./test/run');
 
 
 (async() => {
-    const targetDir = '/tmp/vuel-test';
+    const targetDir = '/tmp/vlue-test';
     if(!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir);
     }

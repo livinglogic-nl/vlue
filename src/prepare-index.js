@@ -14,7 +14,7 @@ module.exports = ({ isDev, sourceBundler, vendorScript }) => {
     try {
         html = fs.readFileSync(file).toString();
     } catch(e) {
-        log.error('vuel relies on src/index.html');
+        log.error('vlue relies on src/index.html');
         return '';
     }
 
@@ -24,7 +24,7 @@ module.exports = ({ isDev, sourceBundler, vendorScript }) => {
         }).join('');
         html = html.replace('</head>', styles + '</head>');
     } else {
-        const link = `<link rel="stylesheet" href="style.css?${hash(sourceBundler.fullStyle)}" data-name="vuel" />\n`;
+        const link = `<link rel="stylesheet" href="style.css?${hash(sourceBundler.fullStyle)}" data-name="vlue" />\n`;
         html = html.replace('</head>', link + '</head>');
     }
 

@@ -11,7 +11,7 @@ const replaceRequires = (str, todo, dir) => {
             url = resolve(dir, url);
         }
         todo.push(url);
-        return `vuelImport('${url}')`;
+        return `vlueImport('${url}')`;
     });
 }
 
@@ -55,7 +55,7 @@ const babelify = (sourceBundler, vendorBundler) => {
 
     let added = '';
     Object.entries(map).forEach(([url,code]) => {
-        added += `vuelImports['${url}'] = (function() { var exports = {}; var module = { exports:exports };
+        added += `vlueImports['${url}'] = (function() { var exports = {}; var module = { exports:exports };
 ${code}
 return module.exports;});
 `;

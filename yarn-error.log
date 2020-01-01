@@ -14,16 +14,16 @@ Platform:
   darwin x64
 
 Trace: 
-  Error: ENOENT: no such file or directory, copyfile '/Users/rinke/Library/Caches/Yarn/v4/npm-ansi-styles-2.2.1-b432dd3358b634cf75e1e4664368240533c1ddbe/node_modules/ansi-styles/index.js' -> '/Users/rinke/vuel/node_modules/node-sass/node_modules/ansi-styles/index.js'
+  Error: ENOENT: no such file or directory, copyfile '/Users/rinke/Library/Caches/Yarn/v4/npm-ansi-styles-2.2.1-b432dd3358b634cf75e1e4664368240533c1ddbe/node_modules/ansi-styles/index.js' -> '/Users/rinke/vlue/node_modules/node-sass/node_modules/ansi-styles/index.js'
 
 npm manifest: 
   {
-    "name": "vuel",
+    "name": "vlue",
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
     "bin": {
-      "vuel": "index.js"
+      "vlue": "index.js"
     },
     "scripts": {
       "test": "node src/test.js"
