@@ -1,6 +1,6 @@
 const { emoji } = require('./log');
 
-module.exports = class VuelStream {
+module.exports = class VlueStream {
     constructor(ps) {
         const types = {};
         Object.entries(emoji).forEach(([key,val]) => {

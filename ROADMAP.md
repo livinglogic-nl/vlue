@@ -1,6 +1,6 @@
 # Version 1.0 MVP
 
-Should showcase core strengths of Vuel:
+Should showcase core strengths of Vlue:
 - Fast startup
 - Integrated puppeteer testing
 - Integrated XHR mocking
@@ -8,7 +8,7 @@ Should showcase core strengths of Vuel:
 
 ## DOD
 - The readme explains the following:
-- Logo + short description of Vuel
+- Logo + short description of Vlue
 - You can 'npm i -g vlue'
 - Using 'vlue demo' you can create the demo project
 - Entering the demo project you can do 'vlue' which starts a dev server and connects a chrome browser

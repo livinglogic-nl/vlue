@@ -1,5 +1,5 @@
 const log = require('./log');
-const VuelStream = require('./vlue-stream');
+const VlueStream = require('./vlue-stream');
 const assert = require('assert');
 const JSONStream = require('json-stream');
 const { EventEmitter } = require('events');

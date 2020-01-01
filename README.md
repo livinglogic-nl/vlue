@@ -1,4 +1,4 @@
-# Vuel
+# Vlue
 
 ## WARNING! Unstable
 This is not ready for the public yet, but I needed it to be on npm ;)

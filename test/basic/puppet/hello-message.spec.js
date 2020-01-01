@@ -4,6 +4,6 @@ describe('Hello message', () => {
         await page.route();
 
         const text = await page.evaluate(() => document.querySelector('#welcome').innerText);
-        t.equal(text, 'Hello Vuel!');
+        t.equal(text, 'Hello Vlue!');
     });
 });

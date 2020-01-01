@@ -38,7 +38,7 @@ module.exports = {
             // assume the puppet test to pass
             await vlueStream.waitForOk();
 
-            const a = 'Hello Vuel!';
+            const a = 'Hello Vlue!';
             const b = 'Forced Error.';
 
             // change to make the puppet test fail

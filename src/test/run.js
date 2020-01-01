@@ -1,4 +1,4 @@
-const VuelStream = require('../vlue-stream');
+const VlueStream = require('../vlue-stream');
 const child_process = require('child_process');
 
 let runningDev = null;
@@ -16,7 +16,7 @@ const runDev = async(project, callback) => {
 
     if(!runningDev) {
         const ps = child_process.spawn('node', [ vlueIndex ], { cwd:targetDir, stdio: ['inherit', 'pipe', 'pipe'] });
-        const stream = new VuelStream(ps);
+        const stream = new VlueStream(ps);
         runningDev = {
             ps, stream,
         };
@@ -29,7 +29,7 @@ const runBuild = async(project, callback) => {
     const { targetDir } = project;
     const vlueIndex = __dirname + '/../../index.js';
     const ps = child_process.spawn('node', [ vlueIndex, 'build' ], { cwd:targetDir, stdio: ['inherit', 'pipe', 'pipe'] });
-    const vlueStream = new VuelStream(ps);
+    const vlueStream = new VlueStream(ps);
 
     await callback(vlueStream);
 }
