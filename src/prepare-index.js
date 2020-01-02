@@ -5,6 +5,7 @@ const NotFoundError = require('./not-found-error');
 
 
 const hash = (str) => {
+    if(!str) { return ''; }
     return crypto.createHash('md5').update(str).digest('hex');
 }
 
