@@ -1,15 +1,13 @@
+const finishUrl = require('./finish-url');
 const resolve = require('./resolve');
 const log = require('./log');
 const fs = require('fs');
 const path = require('path');
 
-
 const replaceRequires = (str, todo, dir) => {
-    return str.replace(/require\(.(.+).\)/g, (all, url) => {
-        url += '.js';
-        if(url.charAt(0) === '.') {
-            url = resolve(dir, url);
-        }
+    return str.replace(/^require\(.(.+).\)/g, (all, url) => {
+        console.log(str, {url});
+        url = finishUrl(url, dir);
         todo.push(url);
         return `vlueImport('${url}')`;
     });
@@ -26,32 +24,28 @@ const babelify = (sourceBundler, vendorBundler) => {
     ];
 
     const todo = [];
-    let beforeLines = new Set;
+    let polyFills = new Set;
     scripts = scripts.map(script => {
         let transformed = babel.transform(sentinel + script).code;
         let index = transformed.indexOf(sentinel);
-        transformed.substr(0,index).split('\n').forEach(line => beforeLines.add(line));
+        transformed.substr(0,index).split('\n').forEach(line => polyFills.add(line));
         let after = transformed.substr(sentinel + sentinel.length);
         after = replaceRequires(after, todo);
         return after;
     });
     let [ vendor, script ] = scripts;
 
-    const sharedBefore = replaceRequires([...beforeLines].join('\n'), todo);
+    const sharedPolyfills = replaceRequires([...polyFills].join('\n'), todo);
 
     const map = {};
     while(todo.length) {
         const url = todo.shift();
         if(!map[url]) {
-            let str = fs.readFileSync('node_modules/' + url).toString();
+            let str = fs.readFileSync(url).toString();
             str = replaceRequires(str, todo, path.dirname(url));
             map[url] = str;
         }
     }
-    const sorted = Object.entries(map).sort((a,b) => {
-        return a[1].length < b[1].length ? 1 : -1
-    });
-    // console.log(sorted.slice(0,10).map(arr => ({ name:arr[0], size:arr[1].length })));
 
     let added = '';
     Object.entries(map).forEach(([url,code]) => {
@@ -61,7 +55,7 @@ return module.exports;});
 `;
     });
 
-    added += sharedBefore;
+    added += sharedPolyfills;
     return {
         script,
         vendor: added + vendor,
